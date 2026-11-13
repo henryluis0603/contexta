@@ -1,4 +1,4 @@
-# Contexta — el contexto externo de una empresa, con fuentes, en un minuto.
+# Auditrail — el entorno del deudor, con evidencia auditable: cada afirmación deja su rastro hasta la fuente.
 #     streamlit run app/streamlit_app.py
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ from ai.detectar_sector import detectar_sector  # noqa: E402
 from backend.sources.bcrp import SECTORES, SUBSECTORES  # noqa: E402
 from backend.sources.web import proveedor as proveedor_web  # noqa: E402
 
-st.set_page_config(page_title="Contexta · contexto crediticio", page_icon="🔎", layout="wide")
+st.set_page_config(page_title="Auditrail · el entorno del deudor, con evidencia auditable", page_icon="🔎", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
 
 SENAL = {"favorable": ("🟢", "Favorable"), "neutral": ("🟡", "Neutral"),
@@ -47,8 +47,8 @@ detectar_cacheado = st.cache_data(ttl=24 * 3600, show_spinner=False)(detectar_se
 
 # ---------------- Barra lateral ----------------
 with st.sidebar:
-    st.header("🔎 Contexta")
-    st.caption("Contexto externo para análisis de crédito empresarial, con cita obligatoria de fuentes.")
+    st.header("🔎 Auditrail")
+    st.caption("El entorno del deudor, con evidencia auditable. Para auditoría interna de la clasificación crediticia.")
     modo = st.radio("Empresa", ["Escribir empresa", "De la lista demo"], horizontal=True)
     if modo == "De la lista demo":
         empresa = st.selectbox("Empresa", empresas.empresa)
@@ -58,7 +58,7 @@ with st.sidebar:
                                     subsector_sel=fila.subsector, deteccion=None)
     else:
         empresa = st.text_input("Razón social o nombre comercial", placeholder="p. ej. María Almenara",
-                                help="Pulsa Enter: Contexta detecta el sector y subsector con noticias recientes.")
+                                help="Pulsa Enter: Auditrail detecta el sector y subsector con noticias recientes.")
         empresa = empresa.strip()
         if empresa and st.session_state.get("clasif_de") != ("texto", empresa):
             with st.spinner("Detectando el sector con noticias recientes…"):
@@ -177,7 +177,7 @@ with tab_inf:
                       or "micro" in d.valor.lower()) for d in inf.ficha_empresa)
         html_(tarjeta("Sensibilidad del flujo de caja al entorno (12 meses) · Res. SBS N.° 11356-2008, mod. por Res. SBS N.° 2368-2023",
                       "".join(bloques) or '<div class="nota">Sin factores con fuente suficiente para estos criterios.</div>',
-                      nota=e(NORMA_CPP) + " Contexta no asigna la categoría: la evalúa el auditor frente a la "
+                      nota=e(NORMA_CPP) + " Auditrail no asigna la categoría: la evalúa el auditor frente a la "
                            "sustentación de la entidad." + (" " + e(NORMA_MYPE) if es_mype else "")),
               unsafe_allow_html=True)
 

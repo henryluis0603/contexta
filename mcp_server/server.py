@@ -1,7 +1,7 @@
-"""Servidor MCP de Contexta (sesión 04): el mismo motor, usable desde Claude Desktop / Claude Code.
+"""Servidor MCP de Auditrail (sesión 04): el mismo motor, usable desde Claude Desktop / Claude Code.
 
     python mcp_server/server.py                                       # por stdio
-    claude mcp add --scope project contexta -- python mcp_server/server.py
+    claude mcp add --scope project auditrail -- python mcp_server/server.py
 
 El analista le pregunta a Claude "¿cómo está el contexto de Cementos Pacasmayo?" y Claude llama a
 estas herramientas; cada cifra viene de una llamada reproducible al BCRP o de una noticia con URL.
@@ -28,7 +28,7 @@ from backend.sources.noticias import documentos_noticias  # noqa: E402
 
 SOLO_LECTURA = {"readOnlyHint": True, "openWorldHint": True}
 
-mcp = FastMCP("contexta", instructions=(
+mcp = FastMCP("auditrail", instructions=(
     "Contexto externo (macro, sector, clima, regulación, social, noticias) de empresas peruanas para análisis "
     "de crédito. Usa contexto_empresa para el informe completo. Cita siempre la etiqueta y la URL de la fuente; "
     "no inventes cifras: las series del BCRP ya vienen calculadas."))

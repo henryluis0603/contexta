@@ -121,10 +121,10 @@ def informe_latex(datos: dict, res: dict) -> str:
 \definecolor{{enlace}}{{HTML}}{{1A56DB}}
 \setlength{{\parindent}}{{0pt}}
 \setlength{{\parskip}}{{4pt}}
-\hypersetup{{pdftitle={{Contexto crediticio - {esc(datos['empresa'])}}}, pdfauthor={{Contexta}}}}
+\hypersetup{{pdftitle={{Contexto crediticio - {esc(datos['empresa'])}}}, pdfauthor={{Auditrail}}}}
 
 \begin{{document}}
-{{\small\textcolor{{gris}}{{Contexta · Papel de trabajo de auditoría interna · Contexto externo del deudor}}}}
+{{\small\textcolor{{gris}}{{Auditrail · Papel de trabajo de auditoría interna · Contexto externo del deudor}}}}
 
 {{\LARGE\bfseries {esc(datos['empresa'])}}}\\[2pt]
 {{\large Sector {esc(_sector(datos))} \quad·\quad Fecha del análisis: {esc(datos['fecha'])}}}
@@ -149,7 +149,7 @@ def informe_latex(datos: dict, res: dict) -> str:
 {_items(inf.factores_explicativos, et)}
 
 \section*{{Sensibilidad del flujo de caja al entorno (12 meses). Res. SBS N.° 11356-2008, mod. por Res. SBS N.° 2368-2023}}
-\textcolor{{gris}}{{\small {esc(NORMA_CPP)} Contexta no asigna la categoría (Normal, CPP, Deficiente, Dudoso o
+\textcolor{{gris}}{{\small {esc(NORMA_CPP)} Auditrail no asigna la categoría (Normal, CPP, Deficiente, Dudoso o
 Pérdida): la evalúa el auditor frente a la sustentación de la entidad.}}
 {sbs_txt}
 
@@ -170,7 +170,7 @@ Pérdida): la evalúa el auditor frente a la sustentación de la entidad.}}
 }}
 
 \vfill
-{{\footnotesize\textcolor{{gris}}{{Generado por Contexta con {esc(res.get('modelo', ''))} a partir de fuentes públicas
+{{\footnotesize\textcolor{{gris}}{{Generado por Auditrail con {esc(res.get('modelo', ''))} a partir de fuentes públicas
 (medios reconocidos, fuentes oficiales y series del BCRP). Toda afirmación cita su fuente; las que no la tenían
 se eliminaron ({res.get('descartados', 0)} en este informe). Tokens: entrada {u['input_tokens']:,}, salida
 {u['output_tokens']:,}, embeddings {u['embedding_tokens']:,}.}}}}
@@ -248,7 +248,7 @@ def pdf_reportlab(datos: dict, res: dict) -> bytes:
         return [Paragraph(f"{i}.&nbsp;&nbsp;{_x(x)}", st_item) for i, x in enumerate(xs, 1)]
 
     dims = {d.nombre: d for d in inf.dimensiones}
-    h = [Paragraph("Contexta · Papel de trabajo de auditoría interna · Contexto externo del deudor", st_gris),
+    h = [Paragraph("Auditrail · Papel de trabajo de auditoría interna · Contexto externo del deudor", st_gris),
          Paragraph(_x(datos["empresa"]), st_h1),
          Paragraph(f"Sector {_x(_sector(datos))} · Fecha del análisis: {_x(datos['fecha'])}", st_txt),
          ]
@@ -272,7 +272,7 @@ def pdf_reportlab(datos: dict, res: dict) -> bytes:
 
     h += [Paragraph("¿Por qué le estaría yendo bien o mal?", st_h2), *items(inf.factores_explicativos)]
     h += [Paragraph("Sensibilidad del flujo de caja al entorno (12 meses). Res. SBS N.° 11356-2008, mod. por Res. SBS N.° 2368-2023", st_h2),
-          Paragraph(_x(NORMA_CPP) + " Contexta no asigna la categoría (Normal, CPP, Deficiente, Dudoso o "
+          Paragraph(_x(NORMA_CPP) + " Auditrail no asigna la categoría (Normal, CPP, Deficiente, Dudoso o "
                     "Pérdida): la evalúa el auditor frente a la sustentación de la entidad.", st_gris)]
     hay = False
     for crit in CRITERIOS_SBS:
@@ -300,7 +300,7 @@ def pdf_reportlab(datos: dict, res: dict) -> bytes:
         h.append(Paragraph(f"<b>[{k}]</b>&nbsp;&nbsp;{_x(d.fuente)}, {_x(d.fecha)}. {_x(d.titulo)}. "
                            f'<a href="{_x(d.url)}" color="{_HEX["enlace"]}">{_x(dominio)}</a>', st_fuente))
     h += [Spacer(1, 10), Paragraph(
-        f"Generado por Contexta con {_x(res.get('modelo', ''))} a partir de fuentes públicas (medios reconocidos, "
+        f"Generado por Auditrail con {_x(res.get('modelo', ''))} a partir de fuentes públicas (medios reconocidos, "
         f"fuentes oficiales y series del BCRP). Toda afirmación cita su fuente; las que no la tenían se eliminaron "
         f"({res.get('descartados', 0)} en este informe). Tokens: entrada {u['input_tokens']:,}, salida "
         f"{u['output_tokens']:,}, embeddings {u['embedding_tokens']:,}.", st_gris)]
@@ -308,7 +308,7 @@ def pdf_reportlab(datos: dict, res: dict) -> bytes:
     buf = BytesIO()
     SimpleDocTemplate(buf, pagesize=A4, leftMargin=2.2 * cm, rightMargin=2.2 * cm, topMargin=2 * cm,
                       bottomMargin=2 * cm, title=f"Contexto crediticio - {datos['empresa']}",
-                      author="Contexta").build(h)
+                      author="Auditrail").build(h)
     return buf.getvalue()
 
 

@@ -128,7 +128,7 @@ def serie(codigo: str, desde: str | None = None, hasta: str | None = None, reint
 
     url = f"{API}/{codigo}/json/{desde}/{hasta}"
     for intento in range(reintentos):
-        r = httpx.get(url, timeout=30, headers={"User-Agent": "Contexta/0.1"})
+        r = httpx.get(url, timeout=30, headers={"User-Agent": "Auditrail/0.1"})
         try:
             d = r.json()
             break

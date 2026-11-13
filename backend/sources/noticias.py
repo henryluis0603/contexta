@@ -17,7 +17,7 @@ from backend.models import Documento
 from backend.sources.bcrp import SUBSECTORES
 
 RSS = "https://news.google.com/rss/search?q={q}&hl=es-419&gl=PE&ceid=PE:es-419"
-UA = {"User-Agent": "Mozilla/5.0 (Contexta; research bot)"}
+UA = {"User-Agent": "Mozilla/5.0 (Auditrail; research bot)"}
 
 # Fuentes oficiales: se marcan como verificadas.
 OFICIALES = ("gob.pe", "bcrp.gob.pe", "sbs.gob.pe", "smv.gob.pe", "inei.gob.pe", "senamhi.gob.pe",

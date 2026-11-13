@@ -17,7 +17,7 @@ DIMENSIONES = {
 # Base normativa: Reglamento para la Evaluación y Clasificación del Deudor y la Exigencia de Provisiones
 # (Res. SBS N.° 11356-2008), modificado por la Res. SBS N.° 2368-2023 (14/07/2023). Texto oficial verificado en
 # https://intranet2.sbs.gob.pe/dv_int_cn/2290/v2.0/Adjuntos/2368-2023.pdf
-# Contexta cubre solo el contexto EXTERNO; no asigna la categoría (Normal, CPP, Deficiente, Dudoso, Pérdida),
+# Auditrail cubre solo el contexto EXTERNO; no asigna la categoría (Normal, CPP, Deficiente, Dudoso, Pérdida),
 # que es responsabilidad de la entidad y la revisa el auditor.
 NORMA_CPP = ("Res. SBS N.° 2368-2023, que modifica el numeral 2.2 del Capítulo II del Reglamento (Res. SBS N.° "
              "11356-2008), categoría Con Problemas Potenciales de deudores no minoristas, literal a): «El flujo de "

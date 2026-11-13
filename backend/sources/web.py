@@ -5,7 +5,7 @@ directorios, en resoluciones de PRODUCE o en su propia web. Dos proveedores:
   - OpenAI (por defecto): la herramienta web_search de la Responses API, con la MISMA OPENAI_API_KEY. Devuelve
     una síntesis con citas (url_citation); guardamos esa síntesis rotulada con la página que cita.
   - Tavily (opcional, si hay TAVILY_API_KEY): devuelve extractos de cada página; plan gratuito mensual.
-Sin ninguna clave devuelve [] y el resto de Contexta sigue funcionando.
+Sin ninguna clave devuelve [] y el resto de Auditrail sigue funcionando.
 """
 from __future__ import annotations
 
