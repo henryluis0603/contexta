@@ -1,0 +1,14 @@
+streamlit>=1.40
+openai>=1.60
+pydantic>=2.7
+numpy
+pandas
+scikit-learn
+plotly
+httpx
+feedparser
+trafilatura
+googlenewsdecoder
+python-dotenv
+fastmcp>=2
+pytest

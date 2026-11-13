@@ -1,0 +1,10 @@
+.env
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+# Caché local: contiene texto completo de artículos de prensa (no se redistribuye)
+data/cache/
+.DS_Store
