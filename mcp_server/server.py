@@ -20,6 +20,7 @@ from fastmcp.exceptions import ToolError  # noqa: E402
 
 load_dotenv(RAIZ / ".env")
 
+from ai.detectar_sector import detectar_sector  # noqa: E402
 from ai.rag import analizar  # noqa: E402
 from backend.recolector import recolectar  # noqa: E402
 from backend.sources import bcrp  # noqa: E402
@@ -34,22 +35,36 @@ mcp = FastMCP("contexta", instructions=(
 
 
 @mcp.tool(annotations=SOLO_LECTURA)
-def sectores_disponibles() -> list[str]:
-    """Sectores válidos (clasificación del BCRP) para los demás tools."""
-    return list(bcrp.SECTORES)
+def sectores_disponibles() -> dict[str, list[str]]:
+    """Sectores válidos (clasificación del BCRP) y sus subsectores, para los demás tools."""
+    return {s: list(subs) for s, subs in bcrp.SUBSECTORES.items()}
 
 
 @mcp.tool(annotations=SOLO_LECTURA)
-def contexto_empresa(empresa: str, sector: str, refrescar: bool = False) -> dict:
-    """Informe de contexto crediticio con citas: señal global, factores explicativos, señal por dimensión,
-    preguntas para el cliente y la lista de fuentes (etiqueta -> medio, fecha, título, URL).
+def detectar_sector_empresa(empresa: str) -> dict:
+    """Detecta sector y subsector de una empresa a partir de sus titulares recientes, con el titular que lo
+    justifica y la confianza. Úsalo antes de contexto_empresa si el usuario no dio el sector."""
+    det = detectar_sector(empresa)
+    if det is None:
+        raise ToolError("No se pudo detectar (falta OPENAI_API_KEY o no hubo respuesta).")
+    return det
 
-    empresa: razón social o nombre comercial, p. ej. "Alicorp". sector: uno de sectores_disponibles().
+
+@mcp.tool(annotations=SOLO_LECTURA)
+def contexto_empresa(empresa: str, sector: str, subsector: str | None = None, refrescar: bool = False) -> dict:
+    """Informe de contexto crediticio con citas: factores explicativos, señal por dimensión,
+    puntos de verificación para la auditoría de la clasificación y la lista de fuentes (etiqueta -> medio, fecha, título, URL).
+
+    empresa: razón social o nombre comercial, p. ej. "Alicorp". sector y subsector: de sectores_disponibles()
+    (o de detectar_sector_empresa).
     """
     if sector not in bcrp.SECTORES:
         raise ToolError(f"Sector inválido {sector!r}. Opciones: {list(bcrp.SECTORES)}")
-    datos = recolectar(empresa, sector, usar_cache=not refrescar)
-    res = analizar(empresa, sector, datos["documentos"], datos["fecha"])
+    if subsector and subsector not in bcrp.SUBSECTORES[sector]:
+        raise ToolError(f"Subsector inválido {subsector!r}. Opciones: {list(bcrp.SUBSECTORES[sector])}")
+    datos = recolectar(empresa, sector, usar_cache=not refrescar, subsector=subsector)
+    etiqueta = f"{sector} › {subsector}" if subsector else sector
+    res = analizar(empresa, etiqueta, datos["documentos"], datos["fecha"])
     fuentes = {k: {"fuente": d.fuente, "fecha": d.fecha, "titulo": d.titulo, "url": d.url}
                for k, d in res["etiquetas"].items()}
     if res["informe"] is None:
@@ -77,10 +92,12 @@ def noticias_empresa(empresa: str, sector: str, dias: int = 90) -> list[dict]:
 
 
 @mcp.prompt()
-def comite_de_creditos(empresa: str, sector: str) -> str:
-    """Prepara la sección de contexto externo para un comité de créditos."""
+def revision_clasificacion(empresa: str, sector: str) -> str:
+    """Prepara el papel de trabajo de contexto externo para auditar la clasificación del deudor."""
     return (f"Usa contexto_empresa(empresa='{empresa}', sector='{sector}') y redacta la sección 'Entorno y "
-            "riesgos externos' para el comité de créditos. Cada afirmación con su fuente [Sx] y URL.")
+            "riesgos externos' del papel de trabajo de auditoría de la clasificación del deudor "
+            "(Res. SBS N.° 11356-2008), con los puntos a verificar en el expediente. Cada afirmación con su "
+            "fuente [Sx] y URL.")
 
 
 if __name__ == "__main__":

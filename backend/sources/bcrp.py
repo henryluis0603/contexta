@@ -48,6 +48,64 @@ SECTORES = {
     "Servicios": {"PN01726AM": ("PBI Otros Servicios (var. % interanual)", "%")},
 }
 
+# Subsectores: afinan las búsquedas de noticias ("palabras") y, cuando el BCRP publica la serie del
+# subsector, la agregan ("series"). Códigos verificados en la API del BCRP el 2026-11-13.
+_AGRICOLA = {"PN01714AM": ("PBI Agrícola (var. % interanual)", "%")}
+_PECUARIO = {"PN01715AM": ("PBI Pecuario (var. % interanual)", "%")}
+_MIN_METALICA = {"PN01718AM": ("PBI Minería metálica (var. % interanual)", "%")}
+_HIDROCARBUROS = {"PN01719AM": ("PBI Hidrocarburos (var. % interanual)", "%")}
+_MANUF_PRIMARIA = {"PN01721AM": ("PBI Manufactura de procesadores de recursos primarios (var. % interanual)", "%")}
+
+SUBSECTORES: dict[str, dict[str, dict]] = {
+    "Agropecuario": {
+        "Agroexportación (frutas y hortalizas)": {"palabras": ["agroexportación", "arándanos", "palta", "uva"], "series": _AGRICOLA},
+        "Agrícola para mercado interno (arroz, papa, azúcar)": {"palabras": ["arroz", "papa", '"caña de azúcar"', "agricultura"],
+                                                                "series": _AGRICOLA},
+        "Pecuario y avícola": {"palabras": ["avícola", "pollo", "ganadería", '"producción de leche"'], "series": _PECUARIO},
+    },
+    "Pesca": {
+        "Harina y aceite de pescado": {"palabras": ["anchoveta", '"harina de pescado"', '"pesca industrial"'], "series": {}},
+        "Pesca para consumo humano": {"palabras": ['"pesca artesanal"', '"consumo humano directo"', "pota", "perico", '"desembarque pesquero"'], "series": {}},
+    },
+    "Minería e hidrocarburos": {
+        "Minería metálica (cobre, oro, zinc, plata)": {"palabras": ["cobre", "oro", "zinc", '"minería metálica"'], "series": _MIN_METALICA},
+        "Hidrocarburos (petróleo y gas)": {"palabras": ["petróleo", '"gas natural"', "hidrocarburos"], "series": _HIDROCARBUROS},
+    },
+    "Manufactura": {
+        "Procesadores de recursos primarios (harina de pescado, azúcar, refinación)": {
+            "palabras": ['"harina de pescado"', "azúcar", "refinación", '"manufactura primaria"'], "series": _MANUF_PRIMARIA},
+        "Consumo masivo (alimentos, bebidas, higiene)": {"palabras": ['"consumo masivo"', "alimentos", "bebidas", '"industria alimentaria"'], "series": {}},
+        "Materiales de construcción e insumos industriales": {"palabras": ["cemento", "acero", '"insumos industriales"'],
+                                                              "series": {}},
+        "Textil y confecciones": {"palabras": ["textil", "confecciones"], "series": {}},
+        "Química, plásticos y farmacéutica": {"palabras": ['"industria química"', "plásticos", "farmacéutica"], "series": {}},
+    },
+    "Construcción": {
+        "Infraestructura y obra pública": {"palabras": ["infraestructura", '"obras públicas"', '"inversión pública"'], "series": {}},
+        "Inmobiliario y vivienda": {"palabras": ["inmobiliario", "vivienda", "Mivivienda"], "series": {}},
+        "Cemento y materiales": {"palabras": ["cemento", '"despacho de cemento"'], "series": {}},
+    },
+    "Comercio": {
+        "Retail y supermercados": {"palabras": ["retail", "supermercados", '"centros comerciales"'], "series": {}},
+        "Maquinaria y bienes de capital": {"palabras": ["maquinaria", '"bienes de capital"'], "series": {}},
+        "Automotriz": {"palabras": ['"venta de vehículos"', "automotriz"], "series": {}},
+        "Distribución mayorista": {"palabras": ['"distribución mayorista"', "mayoristas", '"consumo masivo"'], "series": {}},
+    },
+    "Electricidad y agua": {
+        "Generación eléctrica": {"palabras": ['"generación eléctrica"', "hidroeléctrica", "COES"], "series": {}},
+        "Transmisión y distribución eléctrica": {"palabras": ['"distribución eléctrica"', '"tarifas eléctricas"', "Osinergmin"],
+                                                 "series": {}},
+        "Agua y saneamiento": {"palabras": ["agua", "saneamiento", "Sunass"], "series": {}},
+    },
+    "Servicios": {
+        "Transporte y logística": {"palabras": ["transporte", "logística", "puertos"], "series": {}},
+        "Telecomunicaciones": {"palabras": ["telecomunicaciones", "telefonía", "Osiptel"], "series": {}},
+        "Turismo, hoteles y restaurantes": {"palabras": ["turismo", "hoteles", "restaurantes"], "series": {}},
+        "Salud y educación privada": {"palabras": ["clínicas", '"salud privada"', '"educación privada"'], "series": {}},
+        "Servicios a empresas e inmobiliarios": {"palabras": ['"servicios empresariales"', "oficinas", "outsourcing"], "series": {}},
+    },
+}
+
 
 def _periodo(nombre: str) -> str:
     """'Ago.2026' -> '2026-08'."""
@@ -127,11 +185,12 @@ def _a_documento(codigo: str, etiqueta: str, unidad: str, dimension: str) -> tup
     return doc, {"codigo": codigo, "etiqueta": etiqueta, "unidad": unidad, "datos": s["datos"]}
 
 
-def documentos_bcrp(sector: str) -> tuple[list[Documento], list[dict]]:
-    """Evidencia macro + sectorial lista para el RAG, y las series para graficar."""
+def documentos_bcrp(sector: str, subsector: str | None = None) -> tuple[list[Documento], list[dict]]:
+    """Evidencia macro + sectorial (+ subsectorial si existe la serie) para el RAG, y las series para graficar."""
     docs, series = [], []
+    propias = {**SECTORES.get(sector, {}), **SUBSECTORES.get(sector, {}).get(subsector or "", {}).get("series", {})}
     pedidos = [(c, *v, "macro") for c, v in MACRO.items()]
-    pedidos += [(c, *v, "sector") for c, v in SECTORES.get(sector, {}).items()]
+    pedidos += [(c, *v, "sector") for c, v in propias.items()]
     for codigo, etiqueta, unidad, dim in pedidos:
         r = _a_documento(codigo, etiqueta, unidad, dim)
         if r:

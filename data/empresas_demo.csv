@@ -1,15 +1,15 @@
-empresa,sector,nota
-Alicorp,Manufactura,Consumo masivo; listada en la BVL
-Leche Gloria,Manufactura,Lácteos; listada en la BVL
-Cementos Pacasmayo,Construcción,Cemento; listada en la BVL
-UNACEM,Construcción,Cemento; listada en la BVL
-AENZA,Construcción,Infraestructura; listada en la BVL
-Austral Group,Pesca,Harina y aceite de pescado; emisor en la BVL
-Camposol,Agropecuario,Agroexportación; emisor de bonos
-Casa Grande,Agropecuario,Azúcar; listada en la BVL
-Ferreycorp,Comercio,Bienes de capital; listada en la BVL
-InRetail Peru,Comercio,Retail; listada en la BVL
-Volcan Compañía Minera,Minería e hidrocarburos,Minería polimetálica; listada en la BVL
-Southern Copper,Minería e hidrocarburos,Cobre; listada en la BVL
-Engie Energía Perú,Electricidad y agua,Generación eléctrica; listada en la BVL
-Luz del Sur,Electricidad y agua,Distribución eléctrica; listada en la BVL
+empresa,sector,subsector,nota
+Alicorp,Manufactura,"Consumo masivo (alimentos, bebidas, higiene)",Consumo masivo; listada en la BVL
+Leche Gloria,Manufactura,"Consumo masivo (alimentos, bebidas, higiene)",Lácteos; listada en la BVL
+Cementos Pacasmayo,Construcción,Cemento y materiales,Cemento; listada en la BVL
+UNACEM,Construcción,Cemento y materiales,Cemento; listada en la BVL
+AENZA,Construcción,Infraestructura y obra pública,Infraestructura; listada en la BVL
+Austral Group,Pesca,Harina y aceite de pescado,Harina y aceite de pescado; emisor en la BVL
+Camposol,Agropecuario,Agroexportación (frutas y hortalizas),Agroexportación; emisor de bonos
+Casa Grande,Agropecuario,"Agrícola para mercado interno (arroz, papa, azúcar)",Azúcar; listada en la BVL
+Ferreycorp,Comercio,Maquinaria y bienes de capital,Bienes de capital; listada en la BVL
+InRetail Peru,Comercio,Retail y supermercados,Retail; listada en la BVL
+Volcan Compañía Minera,Minería e hidrocarburos,"Minería metálica (cobre, oro, zinc, plata)",Minería polimetálica; listada en la BVL
+Southern Copper,Minería e hidrocarburos,"Minería metálica (cobre, oro, zinc, plata)",Cobre; listada en la BVL
+Engie Energía Perú,Electricidad y agua,Generación eléctrica,Generación eléctrica; listada en la BVL
+Luz del Sur,Electricidad y agua,Transmisión y distribución eléctrica,Distribución eléctrica; listada en la BVL

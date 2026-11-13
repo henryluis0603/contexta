@@ -12,3 +12,4 @@ googlenewsdecoder
 python-dotenv
 fastmcp>=2
 pytest
+reportlab

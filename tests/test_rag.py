@@ -1,9 +1,9 @@
 """Pruebas sin internet ni API key: fragmentación, recuperación y validación de citas."""
-from ai.rag import (Dimension, EmbedderTFIDF, Hallazgo, Indice, Informe, armar_evidencia, fragmentar, recuperar,
+from ai.rag import (AlertaSBS, DatoFicha, Dimension, EmbedderTFIDF, Hallazgo, Indice, Informe, armar_evidencia, fragmentar, recuperar,
                     validar)
 from backend.models import Documento
 from backend.sources.bcrp import _periodo, resumen
-from backend.sources.noticias import clasificar
+from backend.sources.noticias import clasificar, es_de_otro_pais
 
 DOCS = [
     Documento("Alicorp compra Flora Food", "Gestión", "https://gestion.pe/a", "2026-11-02", "empresa",
@@ -35,16 +35,26 @@ def test_bcrp_siempre_entra_en_la_evidencia():
 
 def test_validar_elimina_citas_inventadas():
     inf = Informe(
-        resumen_ejecutivo="x", senal_global="neutral",
-        factores_explicativos=[Hallazgo(afirmacion="real", impacto="positivo", fuentes=["S1"]),
-                               Hallazgo(afirmacion="inventado", impacto="negativo", fuentes=["S99"])],
-        dimensiones=[Dimension(nombre="clima", senal="desfavorable",
-                               hallazgos=[Hallazgo(afirmacion="sin fuente", impacto="negativo", fuentes=[])])],
-        preguntas_para_el_cliente=[], vacios_de_informacion=[])
+        resumen_ejecutivo="x",
+        ficha_empresa=[DatoFicha(campo="ruc", valor="20601356661", fuentes=["S1"]),
+                       DatoFicha(campo="ubicacion", valor="inventada", fuentes=["S50"])],
+        factores_explicativos=[Hallazgo(afirmacion="real", implicancia="", impacto="positivo", fuentes=["S1"]),
+                               Hallazgo(afirmacion="inventado", implicancia="", impacto="negativo", fuentes=["S99"])],
+        dimensiones=[Dimension(nombre="clima", senal="desfavorable", sintesis="",
+                               hallazgos=[Hallazgo(afirmacion="sin fuente", implicancia="", impacto="negativo",
+                                                   fuentes=[])])],
+        insumos_clasificacion_sbs=[
+            AlertaSBS(afirmacion="con fuente", implicancia="", impacto="negativo", fuentes=["S1"],
+                      criterio="entorno_comercial"),
+            AlertaSBS(afirmacion="sin fuente", implicancia="", impacto="negativo", fuentes=["S7"],
+                      criterio="riesgo_cambiario")],
+        puntos_de_verificacion=[], vacios_de_informacion=[])
     limpio, descartados = validar(inf, {"S1": DOCS[0]})
     assert [h.afirmacion for h in limpio.factores_explicativos] == ["real"]
+    assert [h.criterio for h in limpio.insumos_clasificacion_sbs] == ["entorno_comercial"]
     assert limpio.dimensiones[0].senal == "sin_evidencia"
-    assert descartados == 2
+    assert [d.campo for d in limpio.ficha_empresa] == ["ruc"]
+    assert descartados == 4
 
 
 def test_filtro_de_fuentes():
@@ -54,9 +64,54 @@ def test_filtro_de_fuentes():
     assert clasificar("blog-cualquiera.com") is None
 
 
+def test_descarta_secciones_de_otros_paises():
+    assert es_de_otro_pais("https://www.infobae.com/colombia/2026/08/10/reforma-tributaria/")
+    assert not es_de_otro_pais("https://www.infobae.com/peru/2026/10/25/el-nino/")
+    assert not es_de_otro_pais("https://gestion.pe/economia/el-nino-industria/")
+
+
 def test_bcrp_periodos_y_resumen():
     assert _periodo("Set.2026") == "2026-09"
     s = {"datos": [{"periodo": f"2025-{m:02d}", "valor": float(m)} for m in range(1, 13)]
          + [{"periodo": "2026-01", "valor": 20.0}]}
     r = resumen(s)
     assert r["ultimo"]["valor"] == 20.0 and r["hace_12m"]["periodo"] == "2025-01" and r["max_12m"]["valor"] == 20.0
+
+
+
+def test_catalogo_de_subsectores_y_lista_demo():
+    import pandas as pd
+    from backend.sources.bcrp import SECTORES, SUBSECTORES
+    assert set(SUBSECTORES) == set(SECTORES)
+    assert all(subs and all(v["palabras"] for v in subs.values()) for subs in SUBSECTORES.values())
+    demo = pd.read_csv("data/empresas_demo.csv")
+    for _, f in demo.iterrows():
+        assert f.subsector in SUBSECTORES[f.sector], f.empresa
+
+
+def test_detector_sin_api_key_no_inventa(monkeypatch):
+    from ai.detectar_sector import OPCIONES, detectar_sector
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    assert detectar_sector("Alicorp") is None
+    assert "Manufactura › Consumo masivo (alimentos, bebidas, higiene)" in OPCIONES
+
+
+def test_web_sin_clave_no_rompe_nada(monkeypatch):
+    from backend.sources.web import buscar_web, tipo_fuente
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    assert buscar_web("Sycpha S.A.C.") == []
+    assert tipo_fuente("https://www.gob.pe/institucion/produce/normas") == "oficial"
+    assert tipo_fuente("https://gestion.pe/x") == "medio"
+    assert tipo_fuente("https://www.universidadperu.com/empresas/x.php") == "directorio"
+
+
+def test_parrafos_sin_enlace_se_asignan_a_la_cita_siguiente():
+    from backend.sources.web import asignar_parrafos
+    u1, u2 = "https://elruc.pe/x?utm_source=openai", "https://www.gob.pe/y?utm_source=openai"
+    texto = (f"- **RUC**: 20118800371\n- **Estado**: Activo y habido\n- ([elruc.pe]({u1}))\n"
+             f"- **Habilitación**: licencia de planta ([gob.pe]({u2}))\nNota final sin cita")
+    pags = asignar_parrafos(texto, {u1: ("https://elruc.pe/x", "elruc"), u2: ("https://www.gob.pe/y", "gob")})
+    assert pags["https://elruc.pe/x"]["parrafos"] == ["- **RUC**: 20118800371", "- **Estado**: Activo y habido"]
+    assert pags["https://www.gob.pe/y"]["parrafos"][0].startswith("- **Habilitación**")
+    assert "Nota final sin cita" in pags["https://www.gob.pe/y"]["parrafos"]

@@ -22,7 +22,11 @@ Senal = Literal["favorable", "neutral", "desfavorable", "sin_evidencia"]
 
 # ---------- Salida estructurada ----------
 class Hallazgo(BaseModel):
-    afirmacion: str = Field(description="Hecho concreto, con cifra y periodo si la evidencia los tiene")
+    afirmacion: str = Field(description="Hecho concreto, con cifra, periodo y contexto si la evidencia los tiene "
+                                        "(1 a 2 oraciones)")
+    implicancia: str = Field(description="Cómo ese hecho puede afectar la capacidad de pago del deudor: canal "
+                                         "(ventas, costos, márgenes, liquidez, operación) y horizonte. Es análisis, "
+                                         "no un hecho nuevo: no agregues cifras que no estén en la evidencia")
     impacto: Literal["positivo", "negativo", "neutral"]
     fuentes: list[str] = Field(description='Etiquetas de la evidencia que lo respaldan, p. ej. ["S2", "S7"]')
 
@@ -30,15 +34,41 @@ class Hallazgo(BaseModel):
 class Dimension(BaseModel):
     nombre: Literal["empresa", "sector", "macro", "clima", "regulatorio", "social"]
     senal: Senal
-    hallazgos: list[Hallazgo]
+    sintesis: str = Field(description="2 a 3 oraciones que integran los hallazgos y justifican la señal")
+    hallazgos: list[Hallazgo] = Field(description="2 a 4 hallazgos si hay evidencia suficiente")
+
+
+class AlertaSBS(Hallazgo):
+    """Factor externo agrupado por el criterio de entorno de la Res. SBS N.° 11356-2008 al que sirve de insumo."""
+
+    criterio: Literal["entorno_economico", "riesgo_cambiario", "entorno_comercial", "entorno_politico_regulatorio"]
+
+
+class DatoFicha(BaseModel):
+    campo: Literal["razon_social", "nombre_comercial", "ruc", "actividad_principal", "estado_y_condicion",
+                   "inicio_de_actividades", "ubicacion", "escala_u_operaciones", "habilitaciones_y_permisos",
+                   "ventas_o_ingresos_anuales", "grupo_economico", "tipo_de_credito_referencial"]
+    valor: str = Field(description="Tal como aparece en la fuente. Nunca nombres de personas naturales")
+    fuentes: list[str]
 
 
 class Informe(BaseModel):
-    resumen_ejecutivo: str = Field(description="3 a 4 oraciones para el comité de créditos")
-    senal_global: Senal
+    ficha_empresa: list[DatoFicha] = Field(
+        description="Datos de identificación de la empresa que aparezcan en la evidencia (registros, gob.pe, "
+                    "directorios RUC, medios). Omite los campos sin evidencia.")
+    resumen_ejecutivo: str = Field(
+        description="5 a 7 oraciones en un párrafo: (1) qué hace la empresa y su escala; (2) principales factores "
+                    "externos a favor; (3) principales factores en contra; (4) qué criterios de entorno SBS concentran "
+                    "el riesgo; (5) qué dimensiones no tienen fuentes. Con cifras y periodos de la evidencia")
     factores_explicativos: list[Hallazgo] = Field(description="Por qué le va bien o mal, más allá de los EEFF")
     dimensiones: list[Dimension]
-    preguntas_para_el_cliente: list[str]
+    insumos_clasificacion_sbs: list[AlertaSBS] = Field(
+        description="Variables del entorno a las que el flujo de caja del deudor podría ser sensible en los "
+                    "próximos 12 meses (numeral 2.2 a) del Reglamento, modificado por la Res. SBS 2368-2023), "
+                    "agrupadas por criterio. Nunca propone una categoría.")
+    puntos_de_verificacion: list[str] = Field(
+        description="Qué debe revisar el auditor en el expediente y en la sustentación de la clasificación, "
+                    "con la etiqueta de la fuente que lo motiva, p. ej. [S8]")
     vacios_de_informacion: list[str]
 
 
@@ -116,22 +146,36 @@ class Indice:
         m = self.emb([f"{f.doc.titulo}. {f.texto}" for f in fragmentos])
         self.m = m / (np.linalg.norm(m, axis=1, keepdims=True) + 1e-9)
 
-    def buscar(self, consulta: str, k: int = 6, preferir: str | None = None,
-               bonus: float = 0.05) -> list[tuple[Fragmento, float]]:
-        """Similitud coseno; `preferir` suma un bonus a los fragmentos cuya búsqueda de origen fue esa dimensión."""
+    def buscar(self, consulta: str, k: int = 6, preferir: str | None = None, bonus: float = 0.05,
+               filtro=None) -> list[tuple[Fragmento, float]]:
+        """Similitud coseno; `preferir` suma un bonus a los fragmentos cuya búsqueda de origen fue esa dimensión;
+        `filtro(fragmento) -> bool` restringe a qué fragmentos se puede devolver."""
         q = self.emb([consulta])[0]
         q = q / (np.linalg.norm(q) + 1e-9)
         s = self.m @ q
         if preferir:
             s = s + bonus * np.array([f.doc.dimension == preferir for f in self.frags])
-        return [(self.frags[i], float(s[i])) for i in np.argsort(-s)[:k]]
+        orden = [i for i in np.argsort(-s) if filtro is None or filtro(self.frags[i])]
+        return [(self.frags[i], float(s[i])) for i in orden[:k]]
 
 
 # ---------- Recuperación por dimensión ----------
-def recuperar(indice: Indice, empresa: str, sector: str, k: int = 5) -> dict[str, list[tuple[Fragmento, float]]]:
-    """Una consulta por dimensión: así ninguna dimensión queda tapada por las noticias de la empresa."""
-    return {dim: indice.buscar(f"{empresa} (sector {sector}). {desc}", k=k, preferir=dim)
-            for dim, desc in DIMENSIONES.items()}
+def recuperar(indice: Indice, empresa: str, sector: str, k: int = 6) -> dict[str, list[tuple[Fragmento, float]]]:
+    """Una consulta por dimensión, con cupo propio: primero los fragmentos de las noticias que se buscaron para esa
+    dimensión y, si faltan, el resto. Sin el cupo, las páginas que repiten el nombre de la empresa acaparaban
+    todas las dimensiones y las noticias de paros o normas nunca llegaban al modelo. Las páginas web de la
+    empresa no compiten aquí: entran siempre en armar_evidencia."""
+    out = {}
+    for dim, desc in DIMENSIONES.items():
+        consulta = f"{empresa} (sector {sector}). {desc}"
+        propios = indice.buscar(consulta, k=k, filtro=lambda f, d=dim: f.doc.dimension == d
+                                and not f.doc.tipo.startswith("web_"))
+        if len(propios) < k:
+            ya = {id(f) for f, _ in propios}
+            propios += indice.buscar(consulta, k=k - len(propios), preferir=dim,
+                                     filtro=lambda f: id(f) not in ya and not f.doc.tipo.startswith("web_"))
+        out[dim] = propios
+    return out
 
 
 def armar_evidencia(recuperados: dict, docs: list[Documento]) -> tuple[str, dict[str, Documento]]:
@@ -143,6 +187,16 @@ def armar_evidencia(recuperados: dict, docs: list[Documento]) -> tuple[str, dict
     for d in docs:
         if d.tipo == "serie_bcrp":
             por_doc.setdefault(d.id, []).append(d.texto)
+    # Los resultados web de la empresa (registros, gob.pe) también entran siempre: son la base de la ficha.
+    # Con OpenAI web search varias páginas comparten la misma síntesis: se incluye completa una sola vez.
+    vistos_web: dict[str, str] = {}
+    for d in [d for d in docs if d.tipo.startswith("web_")][:8]:
+        texto = d.texto[:3500]
+        if texto in vistos_web:
+            texto = f"(Página citada por la misma síntesis de búsqueda web que el documento {vistos_web[texto]}.)"
+        else:
+            vistos_web[texto] = d.titulo[:80]
+        por_doc.setdefault(d.id, []).append(texto)
     for lista in recuperados.values():
         for frag, _ in lista:
             textos = por_doc.setdefault(frag.doc.id, [])
@@ -156,7 +210,9 @@ def armar_evidencia(recuperados: dict, docs: list[Documento]) -> tuple[str, dict
         d = mapa_docs[doc_id]
         et = f"S{i}"
         etiquetas[et] = d
-        bloques.append(f"[{et}] {d.fuente} · {d.fecha} · {d.titulo}\n" + "\n…\n".join(textos))
+        rotulo = {"web_oficial": " (fuente oficial)", "web_directorio": " (directorio web; replica registros)",
+                  "noticia_oficial": " (fuente oficial)"}.get(d.tipo, "")
+        bloques.append(f"[{et}]{rotulo} {d.fuente} · {d.fecha} · {d.titulo}\n" + "\n…\n".join(textos))
     return "\n\n".join(bloques), etiquetas
 
 
@@ -175,7 +231,9 @@ def validar(informe: Informe, etiquetas: dict) -> tuple[Informe, int]:
                 descartados += 1
         return out
 
+    informe.ficha_empresa = limpiar(informe.ficha_empresa)
     informe.factores_explicativos = limpiar(informe.factores_explicativos)
+    informe.insumos_clasificacion_sbs = limpiar(informe.insumos_clasificacion_sbs)
     for d in informe.dimensiones:
         d.hallazgos = limpiar(d.hallazgos)
         if not d.hallazgos:
