@@ -2,9 +2,9 @@
 
 *El entorno del deudor, con evidencia auditable.* El nombre viene de **audit trail** (rastro de auditoría): cada afirmación del informe deja su rastro hasta la fuente.
 
-> **Hacemos el análisis de contexto externo de una empresa para los auditores internos de riesgo de crédito del Perú, mediante un RAG sobre noticias de medios confiables y series oficiales del BCRP que cita la fuente de cada afirmación.**
+> **Hacemos el análisis de contexto externo de una empresa para los auditores internos de riesgo de crédito del Perú, mediante un RAG sobre noticias de medios confiables, búsqueda web de registros públicos y series oficiales del BCRP, que cita la fuente de cada afirmación.**
 
-Escribes el nombre de la empresa y, en alrededor de un minuto, obtienes por qué le estaría yendo bien o mal **más allá de sus estados financieros**: macroeconomía, sector, clima, regulación, factores sociales y noticias de la propia empresa. Cada afirmación trae su fuente enlazada.
+Escribes el nombre de la empresa (Auditrail detecta solo su sector y subsector) y, en alrededor de un minuto, obtienes por qué le estaría yendo bien o mal **más allá de sus estados financieros**: macroeconomía, sector, clima, regulación, factores sociales y noticias de la propia empresa. Cada afirmación trae su fuente enlazada, y el informe se descarga en PDF listo para el papel de trabajo.
 
 | | |
 |---|---|
@@ -44,12 +44,15 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 ## 4. Solución e insight
 
-**Qué construí.** Un pipeline que, a partir del nombre de la empresa y su sector:
-1. **Busca noticias** de los últimos N días en Google News, descarta redes sociales y blogs, y **descarga el texto completo** solo de medios reconocidos y fuentes oficiales.
-2. **Descarga series oficiales del BCRP**: PBI, inflación, tasa de referencia, tipo de cambio, PBI del sector y expectativas empresariales del sector. Los estadísticos los calcula Python, no el modelo.
-3. **RAG por dimensión:** fragmenta, embebe y hace una búsqueda por cada una de las 6 dimensiones de riesgo, para que las noticias de la empresa no tapen el clima o la regulación.
-4. **Genera un informe con salida estructurada:** señal por dimensión, factores explicativos, **insumos para la clasificación del deudor según la Res. SBS N.° 11356-2008**, puntos de verificación para la auditoría y vacíos de información.
-5. **Valida las citas:** toda afirmación que cite una fuente inexistente, o que no cite ninguna, **se elimina** antes de mostrarse.
+**Qué construí.** Un pipeline que, a partir del nombre de la empresa:
+1. **Detecta el sector y subsector** (8 sectores, 30 subsectores) con titulares de prensa y una búsqueda web del RUC, priorizando la actividad principal.
+2. **Arma la ficha de la empresa** con búsqueda web (OpenAI `web_search`, o Tavily si se configura): RUC, actividad, ventas o ingresos anuales, grupo económico y **tipo de crédito referencial** según los umbrales de la Res. SBS N.° 2368-2023. Sirve también para empresas pequeñas que casi no salen en prensa. Distingue fuentes oficiales (SMV, SUNAT, `.gob.pe`, web de la empresa) de directorios que replican registros, y no registra personas naturales.
+3. **Busca noticias** de los últimos N días en Google News (consultas con sinónimos por dimensión y por subsector), descarta redes sociales, blogs y noticias de otros países, y **descarga el texto completo** solo de medios reconocidos y fuentes oficiales.
+4. **Descarga series oficiales del BCRP**: PBI, inflación, tasa de referencia, tipo de cambio, PBI del sector y del subsector, y expectativas empresariales. Los estadísticos los calcula Python, no el modelo.
+5. **RAG por dimensión con cuota:** fragmenta, embebe y recupera evidencia para cada una de las 6 dimensiones (macro, sector, clima, regulación, social y empresa), para que las noticias de la empresa no tapen el clima o la regulación.
+6. **Genera el informe con salida estructurada:** ficha, resumen ejecutivo, señal y síntesis por dimensión (cada hallazgo con su implicancia), factores explicativos, **insumos para la clasificación del deudor agrupados por los criterios de la norma SBS**, puntos de verificación para la auditoría y vacíos de información. No hay una "señal global": cada dimensión pesa distinto y esa ponderación es del auditor.
+7. **Valida las citas:** toda afirmación que cite una fuente inexistente, o que no cite ninguna, **se elimina** antes de mostrarse.
+8. **Exporta a PDF** (LaTeX cuando hay motor instalado; si no, reportlab), con las fuentes enlazadas.
 
 **Insight.** El valor no está en "resumir noticias", sino en **convertir el contexto en algo auditable**. Un auditor no puede sustentar un hallazgo con "la IA dice que". Acepta "el PBI del sector cayó X % en tal mes [S3, BCRP]". Por eso la regla de diseño central es **sin fuente, no hay afirmación**. Además, los *puntos de verificación* convierten el contexto en una acción concreta: qué revisar en el expediente de crédito y en la sustentación de la clasificación.
 
@@ -72,18 +75,22 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 ```mermaid
 flowchart LR
-    U[Analista] -->|empresa + sector| APP[Streamlit app/]
+    U[Auditor] -->|nombre de la empresa| DET[ai/detectar_sector.py<br/>sector y subsector]
     U -.->|desde Claude| MCP[Servidor MCP mcp_server/]
+    DET --> APP[Streamlit app/]
     APP --> REC[backend/recolector.py]
     MCP --> REC
+    REC --> W[web.py<br/>búsqueda web → ficha: RUC, ventas, grupo]
     REC --> N[noticias.py<br/>Google News RSS → URL original → texto]
-    REC --> B[bcrp.py<br/>API de series del BCRP]
-    N --> F{Filtro de fuentes<br/>oficiales y medios}
-    F --> RAG[ai/rag.py<br/>fragmentar → embeddings → recuperar x 6 dimensiones]
+    REC --> B[bcrp.py<br/>API de series del BCRP, sector y subsector]
+    N --> F{Filtro de fuentes<br/>oficiales y medios, solo Perú}
+    W --> RAG
+    F --> RAG[ai/rag.py<br/>fragmentar → embeddings → cuota x 6 dimensiones]
     B --> RAG
-    RAG --> LLM[OpenAI · salida estructurada]
+    RAG --> LLM[OpenAI · salida estructurada<br/>marco SBS 11356-2008 y 2368-2023]
     LLM --> V[Validación de citas]
     V --> APP
+    APP --> PDF[backend/reporte_pdf.py<br/>informe PDF]
 ```
 
 ### Modelos y APIs, y por qué
@@ -95,6 +102,8 @@ flowchart LR
 | Respaldo sin key | TF-IDF (scikit-learn) | La demo muestra la evidencia aunque no haya API key o internet. |
 | Datos macro | API del BCRP | Fuente oficial, abierta y sin clave. |
 | Noticias | Google News RSS + `trafilatura` | Cobertura amplia; solo se conservan medios reconocidos y fuentes `.gob.pe`. |
+| Búsqueda web (ficha) | OpenAI `web_search` (Responses API); Tavily opcional | Encuentra RUC, ventas y grupo económico, incluso de empresas pequeñas; con la misma clave de OpenAI. |
+| Informe PDF | LaTeX (`pdflatex`, instalado vía `packages.txt`) o `reportlab` | PDF listo para adjuntar, sin depender de que el servidor tenga LaTeX. |
 
 ### Cómo correrlo
 
@@ -110,7 +119,7 @@ streamlit run app/streamlit_app.py
 ```bash
 claude mcp add --scope project auditrail -- python mcp_server/server.py
 ```
-Herramientas: `contexto_empresa`, `indicadores_sector`, `noticias_empresa`, `sectores_disponibles`, y el prompt `revision_clasificacion`.
+Herramientas: `detectar_sector_empresa`, `contexto_empresa`, `indicadores_sector`, `noticias_empresa`, `sectores_disponibles`, y el prompt `revision_clasificacion`.
 
 **Pruebas:** `pytest -q` (sin internet ni API key).
 
@@ -124,37 +133,49 @@ Herramientas: `contexto_empresa`, `indicadores_sector`, `noticias_empresa`, `sec
 | Analista | Cajas, cooperativas y fintech pequeñas | `[DEFINIR, p. ej. S/ 99]` por usuario al mes, hasta 150 informes |
 | Institución | Bancos | `[DEFINIR]` al mes: usuarios ilimitados, MCP y normativa interna de la entidad en el RAG (on-premise) |
 
-**Costo por informe (medido en 3 empresas de la demo):**
+**Costo por informe.** Tokens medidos en 7 informes reales (Cementos Pacasmayo, Alicorp, Karin Eco Fish, Pesquera Juanita, entre otras). Precios de OpenAI verificados el 14/11/2026 en [developers.openai.com/api/docs/pricing](https://developers.openai.com/api/docs/pricing).
 
-| Concepto | Tokens por informe | Precio por 1M tokens | Costo |
+| Concepto | Cantidad típica por informe | Precio | Costo (US$) |
 |---|---|---|---|
-| Embeddings | ~30–35 mil | `[verificar en openai.com/api/pricing]` | `[calcular]` |
-| Entrada del LLM | ~6–7 mil | `[verificar]` | `[calcular]` |
-| Salida del LLM | `[medir en la app; se muestra al pie del informe]` | `[verificar]` | `[calcular]` |
+| Embeddings (`text-embedding-3-small`) | 35–55 mil tokens | US$ 0.02 / 1M tokens | 0.001 |
+| Entrada del LLM (`gpt-4.1-mini`) | 10–12 mil tokens | US$ 0.40 / 1M tokens | 0.005 |
+| Salida del LLM | 2.5–3.3 mil tokens | US$ 1.60 / 1M tokens | 0.005 |
+| Búsqueda web (ficha y detección de sector) | 2 llamadas | US$ 10 / mil llamadas + 8 mil tokens de contenido por llamada a tarifa de entrada | 0.029 |
+| Detección de sector (LLM) | ~2 mil tokens | tarifa de `gpt-4.1-mini` | 0.001 |
 | Servidor | Streamlit Community Cloud | 0 | 0 |
+| **Total** | | | **≈ 0.04 (≈ S/ 0.15)** |
 
-La app muestra los tokens reales de cada informe y, si configuras los precios en `.env`, también el costo. **Margen de contribución** = precio del plan − (informes al mes × costo por informe).
+La búsqueda web es el 70 % del costo, y se guarda en caché por un día: repetir una empresa el mismo día cuesta ≈ US$ 0.01. Con 150 informes al mes, el costo variable de un usuario es ≈ US$ 6 (≈ S/ 23).
+
+La app muestra los tokens reales al pie de cada informe y, si configuras los precios en `.env` (ver `.env.example`), también el costo. **Margen de contribución** = precio del plan − (informes al mes × costo por informe).
 
 ## 8. Herramientas del curso
 
-| Herramienta (sesión) | Dónde está | Para qué la usa el cliente |
+| Herramienta (sesión) | Dónde está | Para qué la usa el auditor |
 |---|---|---|
-| Scraping y APIs (03) | [`backend/sources/noticias.py`](backend/sources/noticias.py), [`backend/sources/bcrp.py`](backend/sources/bcrp.py) | Reunir noticias con texto completo y series oficiales del BCRP. |
-| LLMs con salidas estructuradas y RAG (08) | [`ai/rag.py`](ai/rag.py), [`ai/prompts.py`](ai/prompts.py) | Generar el informe con citas y descartar lo que no tiene fuente. |
+| Scraping y APIs (03) | [`backend/sources/noticias.py`](backend/sources/noticias.py), [`backend/sources/bcrp.py`](backend/sources/bcrp.py), [`backend/sources/web.py`](backend/sources/web.py) | Reunir noticias con texto completo, series oficiales del BCRP y la ficha de la empresa desde la web. |
+| LLMs con salidas estructuradas y RAG (08) | [`ai/rag.py`](ai/rag.py), [`ai/prompts.py`](ai/prompts.py), [`ai/detectar_sector.py`](ai/detectar_sector.py) | Detectar el sector, generar el informe con citas y descartar lo que no tiene fuente. |
 | MCP (04) | [`mcp_server/server.py`](mcp_server/server.py) | Consultar el contexto de una empresa desde Claude, en lenguaje natural. |
-| Dashboards (05) | [`app/streamlit_app.py`](app/streamlit_app.py) | Semáforo por dimensión e indicadores del BCRP en gráficos. |
+| Dashboards (05) | [`app/streamlit_app.py`](app/streamlit_app.py), [`app/estilo.py`](app/estilo.py) | Ficha, señal por dimensión, insumos SBS e indicadores del BCRP en una sola vista, con descarga en PDF. |
 
 ## 9. Qué hizo el agente
 
 Claude Code (Anthropic) fue el co-founder técnico:
-- **Generó:** la estructura del repo; la ingesta de noticias (decodificación de Google News, extracción de texto y filtro de fuentes); el cliente del BCRP (reutilizando el patrón del servidor MCP de la sesión 04); el pipeline RAG con validación de citas; la app de Streamlit; el servidor MCP; las pruebas en `tests/`, y el borrador de este README.
-- **Lo que definí yo:** el problema y el usuario, las 6 dimensiones de riesgo, qué cuenta como fuente confiable, la regla "sin fuente no hay afirmación", el mapeo de sectores a series del BCRP y la validación con usuarios.
-- **Cómo lo verifiqué:** pruebas unitarias, corridas reales con empresas de la lista demo y revisión de las fuentes citadas contra los artículos originales. `[COMPLETAR con lo que revisaste o cambiaste tú]`
+- **Generó:** la estructura del repo; la ingesta de noticias (decodificación de Google News, extracción de texto, filtro de fuentes y de noticias de otros países); el cliente del BCRP con las series por subsector; la búsqueda web y la ficha de la empresa; el detector de sector; el pipeline RAG con cuota por dimensión y validación de citas; la app de Streamlit y su diseño; el PDF en LaTeX con respaldo en reportlab; el servidor MCP; las pruebas en `tests/`, y el borrador de este README.
+- **Lo que definí yo:** el problema y el usuario (auditoría interna, no el área comercial), las 6 dimensiones de riesgo, qué cuenta como fuente confiable, la regla "sin fuente no hay afirmación", el anclaje en la Res. SBS N.° 11356-2008 y su modificación 2368-2023 (por indicación de mi jefatura), y la validación con usuarios.
+- **Lo que corregí tras revisar los resultados:**
+  - Quité la "señal global": contradecía a las dimensiones (Southern Copper salía favorable con mayoría de dimensiones desfavorables) y cada dimensión pesa distinto.
+  - Cambié "preguntas para el cliente" por **puntos de verificación**: el usuario es el auditor, no el ejecutivo comercial.
+  - Detecté dimensiones "sin evidencia" (Karin Eco Fish) y el agente las corrigió con consultas con sinónimos y cuota por dimensión.
+  - Detecté noticias de Colombia mezcladas en el informe y un sector mal asignado (Luz del Sur como generación), y se corrigieron.
+  - Pedí que empresas pequeñas como Sycpha S.A.C. tuvieran ficha: de ahí salió la búsqueda web.
+- **Cómo lo verifiqué:** 11 pruebas unitarias (`pytest -q`), corridas reales con más de 10 empresas (de corporativos a pequeñas) y revisión de las fuentes citadas contra los documentos originales; el texto de la Res. SBS N.° 2368-2023 se verificó contra el PDF oficial. `[COMPLETAR con lo que encontraron los auditores en la prueba]`
 
 ## Limitaciones y siguientes pasos
 
 - El demo usa solo **información pública**. La versión institucional cargaría en el RAG la normativa interna de cada entidad y los reglamentos públicos de la SBS, y correría en la infraestructura del cliente.
 - Algunos medios tienen muro de pago y se descartan automáticamente.
+- La ficha depende de lo que esté publicado en la web: si no hay ventas públicas, el tipo de crédito queda como "No determinable".
 - Siguiente: alertas semanales cuando cambia la señal de una empresa de la cartera, y comunicados ENFEN/SENAMHI como fuente directa.
 
 ## Licencia
