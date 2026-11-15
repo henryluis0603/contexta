@@ -34,6 +34,35 @@ UMBRALES_TIPO = ("corporativo: ventas > S/ 200 millones en los 2 últimos period
                  "S/ 20 mil). Si la empresa pertenece a un grupo económico donde otra empresa supera el umbral, "
                  "toma el tipo de esa empresa.")
 
+# Numeral 5.1 del Capítulo I, sustituido por la Res. SBS N.° 2368-2023 (texto oficial verificado).
+NORMA_GRUPO = ("Res. SBS N.° 2368-2023, numeral 5.1 del Capítulo I del Reglamento: «Los criterios de evaluación de "
+               "los deudores que se señalan en el artículo 222 de la Ley General se aplican en el contexto de su "
+               "pertenencia a un grupo económico, conglomerado financiero o mixto o en base a otros supuestos de "
+               "riesgo único señalados en el artículo 203 de la Ley General». La definición de grupo económico es la "
+               "de las Normas Especiales sobre Vinculación y Grupo Económico (Res. SBS N.° 5780-2015).")
+NORMA_ALERTAS = ("El mismo numeral 5.1 añade que esos criterios «se aplican sin perjuicio de las disposiciones sobre "
+                 "conocimiento del cliente y del mercado» del Reglamento de Gestión de Riesgos de LA/FT (Res. SBS N.° "
+                 "2660-2015). El artículo 222 de la Ley General pide considerar también los «proyectos futuros y "
+                 "otros factores relevantes» para la capacidad de pago.")
+
+# Búsquedas adicionales a las 6 dimensiones (no llevan señal): riesgo único y señales externas.
+MODULOS = {
+    "grupo": "Grupo económico de la empresa: matriz, accionista controlador, subsidiarias y empresas vinculadas, y "
+             "su situación: deuda, resultados, reestructuraciones, litigios, ventas de activos",
+    "alertas": "Clasificación de riesgo y perspectiva de clasificadoras, hechos de importancia, sanciones y multas "
+               "de OEFA, INDECOPI, SUNAFIL, SUNAT u otros reguladores, procesos concursales o judiciales, conflictos "
+               "sociales o ambientales, investigaciones fiscales",
+}
+CATEGORIAS_ALERTA = {
+    "clasificacion_de_riesgo": "Clasificación de riesgo (rating y perspectiva)",
+    "hecho_de_importancia": "Hechos de importancia y operaciones relevantes",
+    "sancion_administrativa": "Sanciones y multas de reguladores",
+    "proceso_concursal_o_judicial": "Procesos concursales, judiciales o arbitrales",
+    "conflicto_social_o_ambiental": "Conflictos sociales o ambientales",
+    "reputacional_o_laft": "Reputacional, corrupción o LA/FT",
+    "proyecto_futuro": "Proyectos e inversiones anunciados",
+}
+
 # Variables del entorno que nombra el literal a) del numeral 2.2 (CPP), más el riesgo cambiario.
 CRITERIOS_SBS = {
     "entorno_economico": "Entorno económico en que opera el deudor: crecimiento, inflación, tasas, demanda agregada",
@@ -44,7 +73,8 @@ CRITERIOS_SBS = {
 
 # Nombres para mostrar (app y PDF).
 NOMBRE_DIM = {"empresa": "Empresa", "sector": "Sector", "macro": "Macroeconomía", "clima": "Clima",
-              "regulatorio": "Regulatorio", "social": "Social y político"}
+              "regulatorio": "Regulatorio", "social": "Social y político", "grupo": "Grupo económico",
+              "alertas": "Señales y alertas"}
 NOMBRE_CRIT = {"entorno_economico": "Entorno económico", "riesgo_cambiario": "Riesgo cambiario",
                "entorno_comercial": "Entorno comercial", "entorno_politico_regulatorio": "Entorno político y regulatorio"}
 NOMBRE_FICHA = {"razon_social": "Razón social", "nombre_comercial": "Nombre comercial", "ruc": "RUC",

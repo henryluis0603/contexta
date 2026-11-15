@@ -12,7 +12,7 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from ai.prompts import SISTEMA, USUARIO
-from backend.models import DIMENSIONES, Documento
+from backend.models import DIMENSIONES, MODULOS, Documento
 
 EMBED_MODEL = os.getenv("OPENAI_EMBED_MODEL", "text-embedding-3-small")
 CHAT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
@@ -52,15 +52,55 @@ class DatoFicha(BaseModel):
     fuentes: list[str]
 
 
+class Vinculada(BaseModel):
+    empresa: str = Field(description="Razón social de la empresa vinculada (nunca una persona natural)")
+    relacion: str = Field(description="Matriz, subsidiaria, misma matriz, participación de X %, etc., según la fuente")
+    situacion: str = Field(description="Hechos recientes relevantes para su riesgo de crédito, con cifra y fecha si "
+                                       "la evidencia los tiene; o 'Sin hechos relevantes en la evidencia'")
+    impacto: Literal["positivo", "negativo", "neutral"]
+    fuentes: list[str]
+
+
+def sin_hechos(v: "Vinculada") -> bool:
+    """Vinculada listada solo por la estructura del grupo, sin hechos recientes."""
+    return v.situacion.strip().lower().startswith(("sin hechos", "no se", "sin información"))
+
+
+class GrupoEconomico(BaseModel):
+    pertenece: Literal["si", "no_hallado"] = Field(description='"si" solo si una fuente lo dice')
+    nombre_del_grupo: str = Field(description='Nombre del grupo o holding; "" si no se halló')
+    sintesis: str = Field(description="2 a 4 oraciones: estructura del grupo, situación del grupo y cómo puede "
+                                      "afectar al deudor (soporte o contagio). Vacío si no se halló")
+    vinculadas: list[Vinculada]
+    hallazgos: list[Hallazgo] = Field(description="Hechos del grupo que afectan el riesgo único del deudor")
+
+
+class AlertaExterna(Hallazgo):
+    """Señal externa con fecha, agrupada por categoría (rating, sanción, proceso, conflicto, reputación, proyecto)."""
+
+    categoria: Literal["clasificacion_de_riesgo", "hecho_de_importancia", "sancion_administrativa",
+                       "proceso_concursal_o_judicial", "conflicto_social_o_ambiental", "reputacional_o_laft",
+                       "proyecto_futuro"]
+    fecha_del_hecho: str = Field(description="Fecha o periodo del hecho según la fuente; 's/f' si no la tiene")
+    relevancia: Literal["alta", "media", "baja"] = Field(
+        description="alta: puede afectar la capacidad de pago o exige sustentación en el expediente; media: debe "
+                    "conocerse; baja: informativa")
+
+
 class Informe(BaseModel):
     ficha_empresa: list[DatoFicha] = Field(
         description="Datos de identificación de la empresa que aparezcan en la evidencia (registros, gob.pe, "
                     "directorios RUC, medios). Omite los campos sin evidencia.")
     resumen_ejecutivo: str = Field(
-        description="5 a 7 oraciones en un párrafo: (1) qué hace la empresa y su escala; (2) principales factores "
+        description="6 a 8 oraciones en un párrafo: (1) qué hace la empresa y su escala; (2) principales factores "
                     "externos a favor; (3) principales factores en contra; (4) qué criterios de entorno SBS concentran "
-                    "el riesgo; (5) qué dimensiones no tienen fuentes. Con cifras y periodos de la evidencia")
+                    "el riesgo; (5) alertas de relevancia alta y situación del grupo económico, si las hay; (6) qué dimensiones \
+no tienen fuentes. Con cifras y periodos de la evidencia")
     factores_explicativos: list[Hallazgo] = Field(description="Por qué le va bien o mal, más allá de los EEFF")
+    senales_y_alertas: list[AlertaExterna] = Field(
+        description="Señales externas sobre la propia empresa: rating, hechos de importancia, sanciones, procesos, "
+                    "conflictos, reputación y LA/FT, proyectos. Solo hechos con fuente; nada si no hay")
+    grupo_economico: GrupoEconomico
     dimensiones: list[Dimension]
     insumos_clasificacion_sbs: list[AlertaSBS] = Field(
         description="Variables del entorno a las que el flujo de caja del deudor podría ser sensible en los "
@@ -175,6 +215,10 @@ def recuperar(indice: Indice, empresa: str, sector: str, k: int = 6) -> dict[str
             propios += indice.buscar(consulta, k=k - len(propios), preferir=dim,
                                      filtro=lambda f: id(f) not in ya and not f.doc.tipo.startswith("web_"))
         out[dim] = propios
+    # Grupo económico y alertas: solo con sus propias noticias (sin relleno, para no forzar evidencia ajena).
+    for mod, desc in MODULOS.items():
+        out[mod] = indice.buscar(f"{empresa}. {desc}", k=4, filtro=lambda f, m=mod: f.doc.dimension == m
+                                 and not f.doc.tipo.startswith("web_"))
     return out
 
 
@@ -190,7 +234,8 @@ def armar_evidencia(recuperados: dict, docs: list[Documento]) -> tuple[str, dict
     # Los resultados web de la empresa (registros, gob.pe) también entran siempre: son la base de la ficha.
     # Con OpenAI web search varias páginas comparten la misma síntesis: se incluye completa una sola vez.
     vistos_web: dict[str, str] = {}
-    for d in [d for d in docs if d.tipo.startswith("web_")][:8]:
+    web = [d for d in docs if d.tipo.startswith("web_")]
+    for d in [x for dim in ("empresa", *MODULOS) for x in web if x.dimension == dim][:20]:
         texto = d.texto[:3500]
         if texto in vistos_web:
             texto = f"(Página citada por la misma síntesis de búsqueda web que el documento {vistos_web[texto]}.)"
@@ -234,6 +279,15 @@ def validar(informe: Informe, etiquetas: dict) -> tuple[Informe, int]:
     informe.ficha_empresa = limpiar(informe.ficha_empresa)
     informe.factores_explicativos = limpiar(informe.factores_explicativos)
     informe.insumos_clasificacion_sbs = limpiar(informe.insumos_clasificacion_sbs)
+    # Una "alerta" que solo dice que no se encontró nada no es un hecho: se descarta.
+    negativas = re.compile(r"^\s*(no se (encontr|hall|report|registr|identific)|sin (registros|hallazgos|reportar)|"
+                           r"no (hay|existen|presenta))", re.I)
+    informe.senales_y_alertas = [a for a in limpiar(informe.senales_y_alertas)
+                                 if not negativas.search(a.afirmacion) and "sin reportar" not in a.afirmacion.lower()]
+    g = informe.grupo_economico
+    g.vinculadas, g.hallazgos = limpiar(g.vinculadas), limpiar(g.hallazgos)
+    if g.pertenece == "si" and not (g.vinculadas or g.hallazgos):
+        g.pertenece, g.nombre_del_grupo, g.sintesis = "no_hallado", "", ""
     for d in informe.dimensiones:
         d.hallazgos = limpiar(d.hallazgos)
         if not d.hallazgos:

@@ -11,9 +11,16 @@ import tempfile
 from pathlib import Path
 from urllib.parse import urlparse
 
-from backend.models import (CRITERIOS_SBS, DIMENSIONES, NOMBRE_CRIT, NOMBRE_DIM, NOMBRE_FICHA, NOMBRE_SENAL,
-                            NORMA_CPP)
+from ai.rag import sin_hechos
+from backend.models import (CATEGORIAS_ALERTA, CRITERIOS_SBS, DIMENSIONES, NOMBRE_CRIT, NOMBRE_DIM,
+                            NOMBRE_FICHA, NOMBRE_SENAL, NORMA_ALERTAS, NORMA_CPP, NORMA_GRUPO)
 
+COLOR_REL = {"alta": "rojo", "media": "ambar", "baja": "gris"}
+RANGO = {"alta": 0, "media": 1, "baja": 2}
+NOTA_VACIAS = ("No equivale a una constancia negativa: confírmalo en las fuentes oficiales y en las listas internas "
+               "del banco.")
+NOTA_SIN_GRUPO = ("No se halló evidencia pública de que la empresa pertenezca a un grupo económico. Verifícalo con la "
+                  "información de vinculación del expediente y del RCC.")
 COLOR_SENAL = {"favorable": "verde", "neutral": "ambar", "desfavorable": "rojo", "sin_evidencia": "gris"}
 FLECHA = {"positivo": r"\textcolor{verde}{$\blacktriangle$}", "negativo": r"\textcolor{rojo}{$\blacktriangledown$}",
           "neutral": r"\textcolor{gris}{$\bullet$}"}
@@ -60,6 +67,47 @@ def _items(hallazgos, etiquetas, prefijo=lambda h: "") -> str:
 
 def _senal(s: str) -> str:
     return rf"\textcolor{{{COLOR_SENAL[s]}}}{{\textbf{{{NOMBRE_SENAL[s]}}}}}"
+
+
+def _alertas_tex(inf, et) -> str:
+    al = sorted(inf.senales_y_alertas, key=lambda a: RANGO[a.relevancia])
+    partes = []
+    for c, nombre in CATEGORIAS_ALERTA.items():
+        xs = [a for a in al if a.categoria == c]
+        if not xs:
+            continue
+        filas = [rf"  \item[\textcolor{{{COLOR_REL[a.relevancia]}}}{{\textbf{{\scriptsize {a.relevancia.upper()}}}}}] "
+                 rf"\textbf{{{esc(a.fecha_del_hecho)}.}} {esc(a.afirmacion)} {_citas(a.fuentes, et)}"
+                 + (rf"\\ {{\small\textcolor{{gris}}{{\textit{{Implicancia:}} {esc(a.implicancia)}}}}}" if a.implicancia else "")
+                 for a in xs]
+        partes.append(rf"\paragraph{{{esc(nombre)}.}}" + "\n\\begin{itemize}\n"
+                      + "\n".join(filas) + "\n\\end{itemize}\n")
+    vacias = [n for c, n in CATEGORIAS_ALERTA.items() if not any(a.categoria == c for a in al)]
+    if vacias:
+        partes.append(rf"{{\small\textcolor{{gris}}{{\textbf{{Sin hallazgos en las fuentes consultadas:}} "
+                      rf"{esc('; '.join(vacias))}. {esc(NOTA_VACIAS)}}}}}" + "\n")
+    return "\n".join(partes) or r"\textit{No se hallaron señales con fuente.}"
+
+
+def _grupo_tex(inf, et) -> str:
+    g = inf.grupo_economico
+    if g.pertenece != "si":
+        return r"\textit{" + esc(NOTA_SIN_GRUPO) + "}\n"
+    out = (rf"\textbf{{{esc(g.nombre_del_grupo)}}}" + "\n\n" if g.nombre_del_grupo else "")
+    out += (rf"\textit{{{esc(g.sintesis)}}}" + "\n" if g.sintesis else "")
+    con = [v for v in g.vinculadas if not sin_hechos(v)]
+    sin = [v for v in g.vinculadas if sin_hechos(v)]
+    if con:
+        out += "\\begin{itemize}\n" + "\n".join(
+            rf"  \item[{FLECHA[v.impacto]}] \textbf{{{esc(v.empresa)}}} ({esc(v.relacion)}): {esc(v.situacion)} "
+            rf"{_citas(v.fuentes, et)}" for v in con) + "\n\\end{itemize}\n"
+    if sin:
+        out += (rf"{{\small\textcolor{{gris}}{{\textbf{{Otras vinculadas sin hechos relevantes en la evidencia:}} "
+                rf"{esc(', '.join(v.empresa for v in sin)).rstrip('.')}.}}}} "
+                + _citas(sorted({f for v in sin for f in v.fuentes}), et) + "\n\n")
+    if g.hallazgos:
+        out += _items(g.hallazgos, et)
+    return out
 
 
 def informe_latex(datos: dict, res: dict) -> str:
@@ -145,6 +193,10 @@ def informe_latex(datos: dict, res: dict) -> str:
 \end{{center}}
 {nota_sin}
 
+\section*{{Señales externas y alertas}}
+\textcolor{{gris}}{{\small {esc(NORMA_ALERTAS)}}}
+{_alertas_tex(inf, et)}
+
 \section*{{¿Por qué le estaría yendo bien o mal?}}
 {_items(inf.factores_explicativos, et)}
 
@@ -152,6 +204,11 @@ def informe_latex(datos: dict, res: dict) -> str:
 \textcolor{{gris}}{{\small {esc(NORMA_CPP)} Auditrail no asigna la categoría (Normal, CPP, Deficiente, Dudoso o
 Pérdida): la evalúa el auditor frente a la sustentación de la entidad.}}
 {sbs_txt}
+
+\section*{{Riesgo único y grupo económico}}
+\textcolor{{gris}}{{\small {esc(NORMA_GRUPO)}}}
+
+{_grupo_tex(inf, et)}
 
 \section*{{Puntos de verificación para la auditoría}}
 {lista(inf.puntos_de_verificacion)}
@@ -270,6 +327,25 @@ def pdf_reportlab(datos: dict, res: dict) -> bytes:
     if any(d.senal == "sin_evidencia" for d in inf.dimensiones):
         h.append(Paragraph("Sin fuentes: no encontramos noticias ni registros sobre esa dimensión en la ventana elegida. No significa que no haya riesgo: es un vacío que el auditor debe cubrir.", st_gris))
 
+    h += [Paragraph("Señales externas y alertas", st_h2), Paragraph(_x(NORMA_ALERTAS), st_gris)]
+    al = sorted(inf.senales_y_alertas, key=lambda a: RANGO[a.relevancia])
+    for c, nombre in CATEGORIAS_ALERTA.items():
+        xs = [a for a in al if a.categoria == c]
+        if xs:
+            h.append(Paragraph(_x(nombre), st_h3))
+            for a in xs:
+                rel = f'<font name="Helvetica-Bold" size="7.5" color="{_HEX[COLOR_REL[a.relevancia]]}">{a.relevancia.upper()}</font>'
+                h.append(Paragraph(f"{rel}&nbsp;&nbsp;<b>{_x(a.fecha_del_hecho)}.</b> {_x(a.afirmacion)} "
+                                   f"{citas(a.fuentes)}", st_item))
+                if a.implicancia:
+                    h.append(Paragraph(f"<i>Implicancia:</i> {_x(a.implicancia)}", st_impl))
+    if not al:
+        h.append(Paragraph("<i>No se hallaron señales con fuente.</i>", st_txt))
+    vacias = [n for c, n in CATEGORIAS_ALERTA.items() if not any(a.categoria == c for a in al)]
+    if vacias:
+        h.append(Paragraph(f"<b>Sin hallazgos en las fuentes consultadas:</b> {_x('; '.join(vacias))}. "
+                           f"{_x(NOTA_VACIAS)}", st_gris))
+
     h += [Paragraph("¿Por qué le estaría yendo bien o mal?", st_h2), *items(inf.factores_explicativos)]
     h += [Paragraph("Sensibilidad del flujo de caja al entorno (12 meses). Res. SBS N.° 11356-2008, mod. por Res. SBS N.° 2368-2023", st_h2),
           Paragraph(_x(NORMA_CPP) + " Auditrail no asigna la categoría (Normal, CPP, Deficiente, Dudoso o "
@@ -283,6 +359,27 @@ def pdf_reportlab(datos: dict, res: dict) -> bytes:
                             f"{_x(CRITERIOS_SBS[crit])}</font>", st_h3), *items(hs)]
     if not hay:
         h.append(Paragraph("<i>Sin factores con fuente suficiente para estos criterios.</i>", st_txt))
+
+    g = inf.grupo_economico
+    h += [Paragraph("Riesgo único y grupo económico", st_h2), Paragraph(_x(NORMA_GRUPO), st_gris)]
+    if g.pertenece != "si":
+        h.append(Paragraph(f"<i>{_x(NOTA_SIN_GRUPO)}</i>", st_txt))
+    else:
+        if g.nombre_del_grupo:
+            h.append(Paragraph(f"<b>{_x(g.nombre_del_grupo)}</b>", st_txt))
+        if g.sintesis:
+            h.append(Paragraph(f"<i>{_x(g.sintesis)}</i>", st_txt))
+        for v in [v for v in g.vinculadas if not sin_hechos(v)]:
+            letra, color = _MARCA[v.impacto]
+            h.append(Paragraph(f'<font name="Helvetica-Bold" color="{_HEX[color]}">{letra}</font>&nbsp;&nbsp;'
+                               f"<b>{_x(v.empresa)}</b> ({_x(v.relacion)}): {_x(v.situacion)} {citas(v.fuentes)}",
+                               st_item))
+        sin = [v for v in g.vinculadas if sin_hechos(v)]
+        if sin:
+            h.append(Paragraph(f"<b>Otras vinculadas sin hechos relevantes en la evidencia:</b> "
+                               f"{_x(', '.join(v.empresa for v in sin)).rstrip('.')}. "
+                               f"{citas(sorted({f for v in sin for f in v.fuentes}))}", st_gris))
+        h += items(g.hallazgos) if g.hallazgos else []
 
     h += [Paragraph("Puntos de verificación para la auditoría", st_h2), *lista(inf.puntos_de_verificacion)]
     h += [Paragraph("Vacíos de información", st_h2), *lista(inf.vacios_de_informacion)]

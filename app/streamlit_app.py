@@ -16,7 +16,7 @@ sys.path.insert(0, str(RAIZ))
 
 from dotenv import load_dotenv  # noqa: E402
 
-load_dotenv(RAIZ / ".env")
+load_dotenv(RAIZ / ".env", override=True)  # override: si cambias la clave en .env, basta recargar
 # En Streamlit Community Cloud la clave vive en st.secrets, no en .env
 try:
     for k in ("OPENAI_API_KEY", "TAVILY_API_KEY", "OPENAI_MODEL", "PRICE_INPUT_PER_1M", "PRICE_OUTPUT_PER_1M", "PRICE_EMBED_PER_1M"):
@@ -25,10 +25,10 @@ try:
 except Exception:
     pass
 
-from ai.rag import analizar  # noqa: E402
-from backend.models import (CRITERIOS_SBS, DIMENSIONES, NOMBRE_CRIT, NOMBRE_DIM, NOMBRE_FICHA,  # noqa: E402
-                            NORMA_CPP, NORMA_MYPE)
-from app.estilo import CSS, chip, e, item, tarjeta  # noqa: E402
+from ai.rag import analizar, sin_hechos  # noqa: E402
+from backend.models import (CATEGORIAS_ALERTA, CRITERIOS_SBS, DIMENSIONES, NOMBRE_CRIT,  # noqa: E402
+                            NOMBRE_DIM, NOMBRE_FICHA, NORMA_ALERTAS, NORMA_CPP, NORMA_GRUPO, NORMA_MYPE)
+from app.estilo import CSS, alerta, chip, e, item, tarjeta, vinculada  # noqa: E402
 from app.estilo import citas as citas_h  # noqa: E402
 from backend.reporte_pdf import generar_pdf  # noqa: E402
 from backend.recolector import recolectar  # noqa: E402
@@ -104,7 +104,7 @@ st.markdown('<div style="margin:-.4rem 0 1rem 0"><span style="font-size:1.55rem;
 if ir:
     t0 = time.time()
     with st.status("Construyendo el contexto…", expanded=True) as estado:
-        st.write("1/3 · Buscando noticias en medios confiables y series oficiales del BCRP…")
+        st.write("1/3 · Buscando noticias, series del BCRP, ficha, grupo económico y alertas…")
         datos = recolectar(empresa, sector, usar_cache=not refrescar, dias=dias, subsector=subsector)
         docs = datos["documentos"]
         st.write(f"   {len(docs)} documentos ({'caché' if datos.get('desde_cache') else 'en vivo'}).")
@@ -153,6 +153,24 @@ with tab_inf:
 
         html_(tarjeta("Resumen", f'<div class="afirm">{e(inf.resumen_ejecutivo)}</div>'), unsafe_allow_html=True)
 
+        # Señales externas y alertas, por categoría y ordenadas por relevancia
+        rango = {"alta": 0, "media": 1, "baja": 2}
+        al = sorted(inf.senales_y_alertas, key=lambda a: rango[a.relevancia])
+        conteo = "".join(chip({"alta": "desfavorable", "media": "neutral", "baja": "sin_evidencia"}[r],
+                              f"{n} de relevancia {r}") for r in rango
+                         if (n := sum(a.relevancia == r for a in al)))
+        cats = [f'<div class="cat"><div class="titulo">{e(nombre)}</div>'
+                + "".join(alerta(a, etiquetas) for a in al if a.categoria == c) + "</div>"
+                for c, nombre in CATEGORIAS_ALERTA.items() if any(a.categoria == c for a in al)]
+        vacias = [n for c, n in CATEGORIAS_ALERTA.items() if not any(a.categoria == c for a in al)]
+        html_(tarjeta("Señales externas y alertas",
+                      (f'<div class="resumen-alertas">{conteo}</div>' if conteo else "")
+                      + ("".join(cats) or '<div class="nota">No se hallaron señales con fuente.</div>')
+                      + (f'<div class="vacias"><b>Sin hallazgos en las fuentes consultadas:</b> '
+                         f'{e("; ".join(vacias))}. No equivale a una constancia negativa: confírmalo en las '
+                         f'fuentes oficiales y en las listas internas del banco.</div>' if vacias else ""),
+                      nota=e(NORMA_ALERTAS)), unsafe_allow_html=True)
+
         # Señal por dimensión
         celdas = "".join(
             f'<div class="glass dim"><div class="nombre">{e(NOMBRE_DIM[k])}</div>'
@@ -180,6 +198,22 @@ with tab_inf:
                       nota=e(NORMA_CPP) + " Auditrail no asigna la categoría: la evalúa el auditor frente a la "
                            "sustentación de la entidad." + (" " + e(NORMA_MYPE) if es_mype else "")),
               unsafe_allow_html=True)
+
+        # Riesgo único y grupo económico
+        g = inf.grupo_economico
+        if g.pertenece == "si":
+            cuerpo_g = ((f'<div class="grupo-nombre">{e(g.nombre_del_grupo)}</div>' if g.nombre_del_grupo else "")
+                        + (f'<div class="sintesis">{e(g.sintesis)}</div>' if g.sintesis else "")
+                        + "".join(vinculada(v, etiquetas) for v in g.vinculadas if not sin_hechos(v))
+                        + (f'<div class="vacias"><b>Otras vinculadas sin hechos relevantes en la evidencia:</b> '
+                           f'{e(", ".join(v.empresa for v in g.vinculadas if sin_hechos(v)))} '
+                           f'{citas_h(sorted({f for v in g.vinculadas if sin_hechos(v) for f in v.fuentes}), etiquetas)}</div>'
+                           if any(sin_hechos(v) for v in g.vinculadas) else "")
+                        + "".join(item(h, etiquetas) for h in g.hallazgos))
+        else:
+            cuerpo_g = ('<div class="nota">No se halló evidencia pública de que la empresa pertenezca a un grupo '
+                        'económico. Verifícalo con la información de vinculación del expediente y del RCC.</div>')
+        html_(tarjeta("Riesgo único y grupo económico", cuerpo_g, nota=e(NORMA_GRUPO)), unsafe_allow_html=True)
 
         st.markdown("#### Detalle por dimensión")
         for dim in DIMENSIONES:

@@ -1,46 +1,28 @@
-# Conversación 3 — PENDIENTE DE COMPLETAR
+# Conversación 3 — Auditor: estados financieros
 
-> Notas reales de la entrevista. No inventar respuestas. Sin nombres de personas, clientes ni del banco.
+> Notas de la entrevista. Sin nombres de personas, clientes ni del banco. Lo marcado `[COMPLETAR]` no se registró.
 
-- **Fecha:** 2026-11-
-- **Canal:** (presencial / Teams / llamada / WhatsApp)
-- **Rol y tipo de institución:** (p. ej. "auditora senior de riesgo de crédito, banco múltiple")
-- **Experiencia en el rol:**
-- **¿Consintió notas anónimas?:** sí / no
+- **Fecha:** 2026-11-14
+- **Rol:** Auditor interno de riesgo de crédito
+- **Institución:** banco del Perú (no se nombra)
+- **Canal:** `[COMPLETAR]`
+- **¿Consintió notas anónimas?:** `[COMPLETAR: sí/no]`
 
-## Cómo revisa hoy el entorno del deudor
--
+## Lo principal que planteó
+- Propuso que Auditrail también considere los **estados financieros** del deudor.
+- `[COMPLETAR: qué análisis concreto haría: ratios, tendencias, comparación con el sector…]`
 
-## Fuentes que usa
--
+## Cómo cambió Auditrail por esta conversación
+- **No se implementa en esta versión**: el análisis financiero, el historial crediticio y el comportamiento bancario se hacen hoy con información interna del banco, y Auditrail cubre lo que no se revisa: el contexto externo.
+- Queda como **siguiente implementación**: leer los EEFF públicos (SMV) de las empresas que reportan y contrastarlos con el entorno (p. ej., si las ventas caen en línea con el sector).
 
-## Tiempo y volumen
-- Horas por deudor en el entorno:
-- Horas por revisión completa:
-- Deudores por muestra / ciclo:
-- Frecuencia del ciclo:
+## Tiempo y volumen (para la sección 3 del README)
+- Horas por deudor revisando el entorno: `[COMPLETAR]`
+- Deudores por muestra o ciclo: `[COMPLETAR]`
 
-## Qué pasa cuando no da el tiempo
--
+## Reacción al demo
+- ¿Lo usaría?: `[COMPLETAR]`
+- Precio razonable y quién decide la compra: `[COMPLETAR]`
 
-## Caso concreto de riesgo externo (anonimizado)
--
-
-## Cómo se evidencia hoy la sensibilidad al entorno (CPP, Res. SBS 2368-2023)
--
-
-## Qué necesita un informe para usarlo en un papel de trabajo
--
-
-## Reacción al demo de Auditrail
-- Qué le gustó:
-- Qué le falta / qué sobra:
-- ¿Lo usaría?:
-- ¿Lo probó con otra empresa? ¿Qué falló?:
-
-## Disposición a pagar
-- Quién decidiría la compra:
-- Precio que le parece razonable:
-
-## Cita textual más útil
-> 
+## Cita textual
+> `[COMPLETAR]`

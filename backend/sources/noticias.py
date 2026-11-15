@@ -44,6 +44,9 @@ CONSULTAS = {
                     "{s} Perú (SUNAT OR impuesto OR multa OR tributario)", '"{e}" (Indecopi OR SUNAT OR multa)'],
     "social": ["{s} Perú (paro OR bloqueo OR huelga OR protesta OR conflicto)",
                "{s} Perú (extorsión OR inseguridad OR delincuencia)", '"{e}" (conflicto OR denuncia)'],
+    "grupo": ['"{e}" (grupo OR holding OR subsidiaria OR matriz OR adquisición)'],
+    "alertas": ['"{e}" (clasificadora OR rating OR perspectiva OR "hecho de importancia" OR bonos)',
+                '"{e}" (OEFA OR Sunafil OR Indecopi OR concursal OR Fiscalía OR sanción OR arbitraje)'],
 }
 # Términos cortos por sector (se combinan con OR).
 PALABRAS_SECTOR = {

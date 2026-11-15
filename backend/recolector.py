@@ -14,7 +14,7 @@ from pathlib import Path
 from backend.models import Documento
 from backend.sources.bcrp import documentos_bcrp
 from backend.sources.noticias import documentos_noticias
-from backend.sources.web import documentos_web
+from backend.sources.web import documentos_web, documentos_web_riesgo
 
 CACHE = Path(__file__).resolve().parents[1] / "data" / "cache"
 
@@ -27,7 +27,7 @@ def _slug(s: str) -> str:
 def recolectar(empresa: str, sector: str, usar_cache: bool = True, dias: int = 120,
                subsector: str | None = None) -> dict:
     """Devuelve {empresa, sector, subsector, fecha, documentos: [Documento], series: [...]}."""
-    archivo = CACHE / ("_".join(_slug(x) for x in (empresa, sector, subsector or "") if x) + ".json")
+    archivo = CACHE / ("_".join(_slug(x) for x in (empresa, sector, subsector or "") if x) + "_v2.json")
     if usar_cache and archivo.exists():
         d = json.loads(archivo.read_text())
         d["documentos"] = [Documento(**x) for x in d["documentos"]]
@@ -37,6 +37,7 @@ def recolectar(empresa: str, sector: str, usar_cache: bool = True, dias: int = 1
     docs_bcrp, series = documentos_bcrp(sector, subsector)
     docs_news = documentos_noticias(empresa, sector, dias=dias, subsector=subsector)
     docs_news += documentos_web(empresa)  # registros y webs: clave para empresas que no salen en noticias
+    docs_news += documentos_web_riesgo(empresa)  # grupo económico y señales externas y alertas
     resultado = {"empresa": empresa, "sector": sector, "subsector": subsector, "fecha": date.today().isoformat(),
                  "documentos": docs_news + docs_bcrp, "series": series}
 

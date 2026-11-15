@@ -103,6 +103,31 @@ ul.lista { margin: 0; padding-left: 1.1rem; } ul.lista li { margin: .3rem 0; fon
 .stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] { display: none; }
 [data-testid="stTextInput"] input, [data-baseweb="select"] > div { border-radius: 10px !important; background: rgba(255,255,255,.75) !important; }
 [data-testid="stStatusWidget"], [data-testid="stAlert"] { border-radius: 14px; }
+
+/* Señales y alertas */
+.cat { margin-top: .9rem; }
+.cat:first-of-type { margin-top: .2rem; }
+.cat .titulo { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 650; color: var(--muted); }
+.alerta { display: grid; grid-template-columns: 4.6rem 1fr; gap: .15rem .7rem; padding: .55rem 0;
+          border-top: 1px solid rgba(31,78,121,.08); }
+.cat .alerta:first-of-type { border-top: none; }
+.rel { align-self: start; text-align: center; font-size: .68rem; font-weight: 700; text-transform: uppercase;
+       letter-spacing: .05em; border-radius: 6px; padding: .18rem 0; margin-top: .1rem; }
+.rel.alta { color: var(--rojo); background: rgba(197,34,31,.10); border: 1px solid rgba(197,34,31,.25); }
+.rel.media { color: var(--ambar); background: rgba(178,106,0,.10); border: 1px solid rgba(178,106,0,.25); }
+.rel.baja { color: var(--gris); background: rgba(122,134,153,.10); border: 1px solid rgba(122,134,153,.25); }
+.fecha { color: var(--muted); font-size: .78rem; font-weight: 600; margin-right: .35rem; }
+.resumen-alertas { display: flex; flex-wrap: wrap; gap: .45rem; margin: 0 0 .5rem 0; }
+.vacias { color: var(--muted); font-size: .8rem; margin-top: .8rem; padding-top: .6rem;
+          border-top: 1px dashed rgba(31,78,121,.18); }
+
+/* Grupo económico */
+.grupo-nombre { font-size: 1.05rem; font-weight: 650; color: var(--ink); margin-bottom: .3rem; }
+.vinc { display: grid; grid-template-columns: 1.1rem minmax(150px, 1fr) 2.2fr; gap: .2rem .7rem; padding: .55rem 0;
+        border-top: 1px solid rgba(31,78,121,.08); font-size: .88rem; line-height: 1.45; }
+.vinc .emp { font-weight: 600; color: var(--ink); }
+.vinc .emp small { display: block; font-weight: 500; color: var(--muted); font-size: .76rem; }
+@media (max-width: 700px) { .vinc { grid-template-columns: 1.1rem 1fr; } .vinc .sit { grid-column: 2; } }
 </style>
 """
 
@@ -127,6 +152,19 @@ def item(h, etiquetas: dict) -> str:
     impl = f'<div class="impl"><b>Implicancia:</b> {e(h.implicancia)}</div>' if getattr(h, "implicancia", "") else ""
     return (f'<div class="item"><div class="marca {e(h.impacto)}">{MARCA[h.impacto]}</div>'
             f'<div class="afirm">{e(h.afirmacion)} {citas(h.fuentes, etiquetas)}</div>{impl}</div>')
+
+
+def alerta(a, etiquetas: dict) -> str:
+    impl = f'<div class="impl"><b>Implicancia:</b> {e(a.implicancia)}</div>' if a.implicancia else ""
+    return (f'<div class="alerta"><div class="rel {e(a.relevancia)}">{e(a.relevancia)}</div>'
+            f'<div class="afirm"><span class="fecha">{e(a.fecha_del_hecho)}</span>{e(a.afirmacion)} '
+            f'{citas(a.fuentes, etiquetas)}</div>{impl}</div>')
+
+
+def vinculada(v, etiquetas: dict) -> str:
+    return (f'<div class="vinc"><div class="marca {e(v.impacto)}">{MARCA[v.impacto]}</div>'
+            f'<div class="emp">{e(v.empresa)}<small>{e(v.relacion)}</small></div>'
+            f'<div class="sit">{e(v.situacion)} {citas(v.fuentes, etiquetas)}</div></div>')
 
 
 def tarjeta(titulo: str, cuerpo: str, nota: str = "", clase: str = "") -> str:

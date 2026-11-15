@@ -1,46 +1,29 @@
-# Conversación 1 — PENDIENTE DE COMPLETAR
+# Conversación 1 — Jefatura de auditoría interna
 
-> Notas reales de la entrevista. No inventar respuestas. Sin nombres de personas, clientes ni del banco.
+> Notas de la entrevista. Sin nombres de personas, clientes ni del banco. Lo marcado `[COMPLETAR]` no se registró.
 
-- **Fecha:** 2026-11-
-- **Canal:** (presencial / Teams / llamada / WhatsApp)
-- **Rol y tipo de institución:** (p. ej. "auditora senior de riesgo de crédito, banco múltiple")
-- **Experiencia en el rol:**
-- **¿Consintió notas anónimas?:** sí / no
+- **Fecha:** 2026-11-14
+- **Rol:** Jefa de auditoría interna (riesgo de crédito)
+- **Institución:** banco del Perú (no se nombra)
+- **Canal:** `[COMPLETAR]`
+- **¿Consintió notas anónimas?:** `[COMPLETAR: sí/no]`
 
-## Cómo revisa hoy el entorno del deudor
--
+## Lo principal que planteó
+- Pidió que el análisis considere la **Res. SBS N.° 2368-2023**, que modifica el Reglamento para la Evaluación y Clasificación del Deudor (Res. SBS N.° 11356-2008).
+- `[COMPLETAR: por qué es importante para el equipo; p. ej., la definición de CPP con la sensibilidad del flujo de caja a 12 meses]`
 
-## Fuentes que usa
--
+## Cómo cambió Auditrail por esta conversación
+- El informe se ancla en la 2368-2023: la sección de insumos para la clasificación sigue el literal a) del numeral 2.2 (CPP: sensibilidad del flujo de caja al entorno económico, comercial, regulatorio y político en los próximos 12 meses), con la cita textual verificada en el PDF oficial.
+- La ficha calcula el **tipo de crédito referencial** con los umbrales de ventas de la norma.
+- Se agregó la sección de **riesgo único y grupo económico**, que la misma norma exige (numeral 5.1).
 
-## Tiempo y volumen
-- Horas por deudor en el entorno:
-- Horas por revisión completa:
-- Deudores por muestra / ciclo:
-- Frecuencia del ciclo:
+## Tiempo y volumen (para la sección 3 del README)
+- Horas por deudor revisando el entorno: `[COMPLETAR]`
+- Deudores por muestra o ciclo: `[COMPLETAR]`
 
-## Qué pasa cuando no da el tiempo
--
+## Reacción al demo
+- ¿Lo usaría?: `[COMPLETAR]`
+- Precio razonable y quién decide la compra: `[COMPLETAR]`
 
-## Caso concreto de riesgo externo (anonimizado)
--
-
-## Cómo se evidencia hoy la sensibilidad al entorno (CPP, Res. SBS 2368-2023)
--
-
-## Qué necesita un informe para usarlo en un papel de trabajo
--
-
-## Reacción al demo de Auditrail
-- Qué le gustó:
-- Qué le falta / qué sobra:
-- ¿Lo usaría?:
-- ¿Lo probó con otra empresa? ¿Qué falló?:
-
-## Disposición a pagar
-- Quién decidiría la compra:
-- Precio que le parece razonable:
-
-## Cita textual más útil
-> 
+## Cita textual
+> `[COMPLETAR]`

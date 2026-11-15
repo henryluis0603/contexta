@@ -1,5 +1,5 @@
 """Pruebas sin internet ni API key: fragmentación, recuperación y validación de citas."""
-from ai.rag import (AlertaSBS, DatoFicha, Dimension, EmbedderTFIDF, Hallazgo, Indice, Informe, armar_evidencia, fragmentar, recuperar,
+from ai.rag import (AlertaExterna, AlertaSBS, DatoFicha, GrupoEconomico, Vinculada, Dimension, EmbedderTFIDF, Hallazgo, Indice, Informe, armar_evidencia, fragmentar, recuperar,
                     validar)
 from backend.models import Documento
 from backend.sources.bcrp import _periodo, resumen
@@ -48,6 +48,8 @@ def test_validar_elimina_citas_inventadas():
                       criterio="entorno_comercial"),
             AlertaSBS(afirmacion="sin fuente", implicancia="", impacto="negativo", fuentes=["S7"],
                       criterio="riesgo_cambiario")],
+        senales_y_alertas=[], grupo_economico=GrupoEconomico(pertenece="no_hallado", nombre_del_grupo="",
+                                                            sintesis="", vinculadas=[], hallazgos=[]),
         puntos_de_verificacion=[], vacios_de_informacion=[])
     limpio, descartados = validar(inf, {"S1": DOCS[0]})
     assert [h.afirmacion for h in limpio.factores_explicativos] == ["real"]
@@ -55,6 +57,27 @@ def test_validar_elimina_citas_inventadas():
     assert limpio.dimensiones[0].senal == "sin_evidencia"
     assert [d.campo for d in limpio.ficha_empresa] == ["ruc"]
     assert descartados == 4
+
+
+def test_validar_grupo_y_alertas():
+    """Las alertas y las vinculadas sin fuente válida se eliminan; un grupo sin evidencia queda 'no_hallado'."""
+    def alerta(fuentes):
+        return AlertaExterna(afirmacion="multa OEFA", implicancia="", impacto="negativo", fuentes=fuentes,
+                             categoria="sancion_administrativa", fecha_del_hecho="2025", relevancia="alta")
+    inf = Informe(
+        resumen_ejecutivo="x", ficha_empresa=[], factores_explicativos=[], dimensiones=[],
+        insumos_clasificacion_sbs=[], puntos_de_verificacion=[], vacios_de_informacion=[],
+        senales_y_alertas=[alerta(["S1"]), alerta(["S9"]),
+                           AlertaExterna(afirmacion="No se encontraron sanciones de SUNAFIL.", implicancia="",
+                                         impacto="neutral", fuentes=["S1"], categoria="sancion_administrativa",
+                                         fecha_del_hecho="s/f", relevancia="baja")],
+        grupo_economico=GrupoEconomico(pertenece="si", nombre_del_grupo="Grupo X", sintesis="s", hallazgos=[],
+                                       vinculadas=[Vinculada(empresa="X S.A.", relacion="matriz", situacion="s",
+                                                             impacto="neutral", fuentes=["S8"])]))
+    limpio, descartados = validar(inf, {"S1": DOCS[0]})
+    assert len(limpio.senales_y_alertas) == 1
+    assert limpio.grupo_economico.pertenece == "no_hallado" and limpio.grupo_economico.nombre_del_grupo == ""
+    assert descartados == 2
 
 
 def test_filtro_de_fuentes():

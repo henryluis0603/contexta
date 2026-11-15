@@ -29,14 +29,15 @@ La clave nunca va en el repo: en Cloud vive en *Secrets*; en local, en `.env` (i
 1. Escribo "Cementos Pacasmayo" y presiono Enter: detecta sola el sector y subsector.
 2. Genero el informe: ficha con ventas, grupo económico y tipo de crédito referencial según la 2368-2023.
 3. Las 6 dimensiones con su señal; abro una y muestro que cada afirmación tiene su fuente enlazada.
-4. Insumos para la clasificación, agrupados por los criterios de la norma, y los puntos de verificación.
-5. Descargo el PDF: "esto se adjunta al papel de trabajo".
+4. Señales y alertas (rating, OPA de Holcim, multas de OEFA y SUNAFIL) y el grupo económico (riesgo único).
+5. Insumos para la clasificación, agrupados por los criterios de la norma, y los puntos de verificación.
+6. Descargo el PDF: "esto se adjunta al papel de trabajo".
 
 **2:10–2:40 · Por qué funciona.**
 "La regla central es: sin fuente, no hay afirmación. Toda afirmación sin una cita válida se elimina antes de mostrarse. Un auditor no puede sustentar con 'la IA dice que'."
 
 **2:40–3:00 · Negocio y cierre.**
-"Cada informe cuesta unos 4 centavos de dólar. Lo paga la institución por auditor al mes." `[precio validado en entrevistas]` "Auditrail: el entorno del deudor, con evidencia auditable."
+"Cada informe cuesta unos 8 centavos de dólar. Lo paga la institución por auditor al mes." `[precio validado en entrevistas]` "Auditrail: el entorno del deudor, con evidencia auditable."
 
 **Plan B:** si falla internet o la API, pasa el video de respaldo o abre un PDF ya generado.
 
