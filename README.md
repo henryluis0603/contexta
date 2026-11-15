@@ -36,15 +36,16 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 **Qué pasa hoy.** Revisan el historial crediticio y los estados financieros, pero el **contexto externo** (un Fenómeno El Niño que golpea al sector, un paro de transportistas, un cambio tributario, una adquisición apalancada) se busca a mano en Google o directamente no se revisa. Los estados financieros miran el pasado; el riesgo se mueve con el contexto.
 
-**Cuánto les cuesta.** `[COMPLETAR con los datos de las 3 entrevistas: horas por empresa dedicadas al contexto, empresas por mes y un caso concreto de deterioro por un factor externo no anticipado]`
+**Cuánto les cuesta.** El equipo entrevistado revisa **20 empresas por ciclo mensual**, repartidas entre sus integrantes, y tiene **3 días al mes** para el análisis completo de clasificación. El contexto externo es solo uno de los insumos (junto con estados financieros, historial crediticio y comportamiento bancario, que se trabajan con información interna), así que compite por ese tiempo con todos los demás insumos. Con Auditrail, el informe de contexto de cada empresa sale en alrededor de un minuto y el auditor solo verifica las fuentes. `[COMPLETAR: minutos que hoy toma el contexto por empresa]`
 
 **Cómo lo resuelven hoy sin Auditrail.** Búsquedas manuales en Google y en medios, revisión ocasional de reportes del BCRP, conocimiento tácito del auditor, o simplemente no hacerlo.
 
 **Pruebas con usuarios.** Auditores del equipo usaron Auditrail con empresas reales (fotos con su consentimiento):
 
-| | | |
-|---|---|---|
-| ![Prueba 1](docs/img/prueba_1.jpg) | ![Prueba 2](docs/img/prueba_2.jpg) | ![Prueba 3](docs/img/prueba_3.jpg) |
+| | |
+|---|---|
+| ![Auditor probando Auditrail con Alicorp](docs/img/prueba_1.jpg) | ![Ficha de Alicorp en Auditrail](docs/img/prueba_2.jpg) |
+| ![Auditor revisando los indicadores del BCRP](docs/img/prueba_3.jpg) | ![Auditor probando Auditrail con otra empresa](docs/img/prueba_4.jpg) |
 
 **Evidencia: 3 conversaciones con auditoría interna** (notas en [`docs/research/`](docs/research/), junto con la guía):
 
@@ -140,13 +141,15 @@ Herramientas: `detectar_sector_empresa`, `contexto_empresa`, `indicadores_sector
 
 ## 7. Modelo de negocio
 
-**Quién paga:** la institución financiera (gerencia de auditoría interna o de riesgos), por auditor.
+**Quién paga:** el área de auditoría interna (o de riesgos) de la institución financiera. En las entrevistas, la disposición a pagar fue de **S/ 20 al mes por auditor** o **S/ 70 al mes por equipo**.
 
-| Plan | Para quién | Precio (propuesta) |
-|---|---|---|
-| Gratis | Analista individual que quiere probarlo | 10 informes/mes |
-| Auditor | Auditores de cajas, cooperativas y bancos medianos | `[DEFINIR, p. ej. S/ 99]` por usuario al mes, hasta 150 informes |
-| Área de auditoría | Bancos | `[DEFINIR]` al mes: usuarios ilimitados, MCP y normativa interna de la entidad en el RAG (on-premise) |
+| Plan | Para quién | Precio | Incluye |
+|---|---|---|---|
+| Auditor | Un auditor que revisa su parte de la muestra | **S/ 20 al mes** | Hasta 30 informes al mes, PDF |
+| Equipo | El equipo de auditoría de crédito (hasta 5 auditores) | **S/ 70 al mes** | Hasta 100 informes al mes, PDF, cuentas para todo el equipo |
+| Institución | Bancos con varios equipos | A medida | Usuarios ilimitados, MCP y normativa interna de la entidad en el RAG (on-premise) |
+
+**Por qué el plan Equipo es el que más conviene.** Un equipo que revisa 20 empresas al mes gasta en API unos S/ 6 (20 × S/ 0.30), así que con S/ 70 el **margen de contribución es ≈ S/ 64 al mes (≈ 91 %)**. Para el equipo son S/ 3.50 por empresa analizada, frente al tiempo de un auditor dentro de una ventana de solo 3 días. Por eso el plan Equipo se vende como el principal y el plan Auditor sirve de entrada para probarlo.
 
 **Costo por informe.** Tokens medidos en 7 informes reales (Cementos Pacasmayo, Alicorp, Karin Eco Fish, Pesquera Juanita, entre otras). Precios de OpenAI verificados el 14/11/2026 en [developers.openai.com/api/docs/pricing](https://developers.openai.com/api/docs/pricing).
 
@@ -162,7 +165,7 @@ Herramientas: `detectar_sector_empresa`, `contexto_empresa`, `indicadores_sector
 
 La búsqueda web es el 80 % del costo, y se guarda en caché por un día: repetir una empresa el mismo día cuesta ≈ US$ 0.015. Con 150 informes al mes, el costo variable de un usuario es ≈ US$ 12 (≈ S/ 45).
 
-La app muestra los tokens reales al pie de cada informe y, si configuras los precios en `.env` (ver `.env.example`), también el costo. **Margen de contribución** = precio del plan − (informes al mes × costo por informe).
+La app muestra los tokens reales al pie de cada informe y, si configuras los precios en `.env` (ver `.env.example`), también el costo. **Margen de contribución** = precio del plan − (informes al mes × costo por informe). Plan Equipo con 20 informes: S/ 70 − S/ 6 ≈ S/ 64. En el peor caso (100 informes): S/ 70 − S/ 30 = S/ 40.
 
 ## 8. Herramientas del curso
 
