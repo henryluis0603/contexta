@@ -58,7 +58,7 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 |---|---|---|---|
 | 1 | Jefa de auditoría interna | Considerar la Res. SBS N.° 2368-2023 | El informe sigue la nueva definición de CPP (sensibilidad del flujo de caja al entorno a 12 meses), calcula el tipo de crédito referencial e incluye el riesgo único y grupo económico |
 | 2 | Auditor de riesgo de crédito | Saber qué dicen otros sobre la empresa, incluido el análisis de las clasificadoras (hoy lo busca rápido en Google) | Nueva sección de señales externas y alertas: rating y fundamentos de cada clasificadora, SMV, reguladores, procesos, conflictos y reputación |
-| 3 | Auditor de riesgo de crédito | Incluir los estados financieros | Fuera de esta versión: los EEFF se analizan con información interna del banco. Queda como siguiente implementación |
+| 3 | Auditor de riesgo de crédito | A futuro, incluir los estados financieros con gráficas y métricas, para cubrir la tarea central (la que más tiempo toma) y no solo ser un insumo | Fuera de esta versión: los EEFF se analizan con información interna del banco. Queda como siguiente implementación (EEFF públicos de la SMV con métricas y gráficas) |
 
 ## 4. Solución e insight
 
@@ -200,7 +200,7 @@ Claude Code (Anthropic) fue el co-founder técnico:
 - El demo usa solo **información pública**. La versión institucional cargaría en el RAG la normativa interna de cada entidad y los reglamentos públicos de la SBS, y correría en la infraestructura del cliente.
 - Algunos medios tienen muro de pago y se descartan automáticamente.
 - La ficha depende de lo que esté publicado en la web: si no hay ventas públicas, el tipo de crédito queda como "No determinable".
-- Siguiente: análisis de los estados financieros públicos (SMV) contrastados con el entorno, pedido en la entrevista 3.
+- Siguiente: estados financieros públicos (SMV) con métricas y gráficas, contrastados con el entorno, pedido en la entrevista 3. Es el paso para que Auditrail apoye la tarea central del análisis (la que más tiempo toma) y no solo el contexto inicial.
 - Siguiente: alertas semanales cuando cambia la señal de una empresa de la cartera, y comunicados ENFEN/SENAMHI como fuente directa.
 
 ## Licencia
