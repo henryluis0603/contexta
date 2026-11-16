@@ -237,7 +237,10 @@ se eliminaron ({res.get('descartados', 0)} en este informe). Tokens: entrada {u[
 
 def generar_pdf(datos: dict, res: dict) -> tuple[bytes, str]:
     """PDF listo para descargar: con LaTeX si hay un motor instalado; si no, con reportlab (Python puro)."""
-    pdf, msg = compilar_pdf(informe_latex(datos, res))
+    try:
+        pdf, msg = compilar_pdf(informe_latex(datos, res))
+    except Exception as e:  # nunca dejar al auditor sin PDF: si LaTeX falla, se usa reportlab
+        pdf, msg = None, f"LaTeX falló ({type(e).__name__})."
     if pdf:
         return pdf, msg
     return pdf_reportlab(datos, res), "Generado con reportlab (no hay motor de LaTeX en este equipo)."
@@ -426,7 +429,8 @@ def compilar_pdf(tex: str, timeout: int = 180) -> tuple[bytes | None, str]:
         cmd = ([motor, "--keep-logs", "informe.tex"] if motor == "tectonic"
                else [motor, "-interaction=nonstopmode", "-halt-on-error", "informe.tex"])
         try:
-            p = subprocess.run(cmd, cwd=d, capture_output=True, text=True, timeout=timeout)
+            p = subprocess.run(cmd, cwd=d, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                               timeout=timeout)  # el log de pdflatex puede traer bytes no UTF-8
         except subprocess.TimeoutExpired:
             return None, f"{motor} tardó más de {timeout} s."
         pdf = Path(d, "informe.pdf")
