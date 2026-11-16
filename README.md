@@ -8,7 +8,7 @@ Escribes el nombre de la empresa (Auditrail detecta solo su sector y subsector) 
 
 | | |
 |---|---|
-| **Demo** | `[COMPLETAR: URL de Streamlit Community Cloud]` · o en local: ver [Cómo correrlo](#cómo-correrlo) |
+| **Demo** | **[auditrail.streamlit.app](https://auditrail.streamlit.app)** · o en local: ver [Cómo correrlo](#cómo-correrlo) |
 | **Video de respaldo (60–90 s)** | `[COMPLETAR: link]` |
 | **Curso** | Data Science con Python · Universidad del Pacífico · 2026-II |
 
@@ -90,7 +90,7 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 ## 6. Demo
 
-**URL:** `[COMPLETAR]` · **Capturas del flujo principal:** `[COMPLETAR: docs/img/01_busqueda.png, 02_informe.png, 03_fuentes.png]`
+**URL:** [auditrail.streamlit.app](https://auditrail.streamlit.app) · **Capturas del flujo principal:** `[COMPLETAR: docs/img/01_busqueda.png, 02_informe.png, 03_fuentes.png]`
 
 ### Arquitectura
 

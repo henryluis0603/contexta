@@ -61,7 +61,7 @@ Súbelo a YouTube como **no listado** y pega el link en el README.
 **Auditrail** · Henry Llupton
 Análisis del entorno del deudor, con fuentes citadas, para auditores internos de riesgo de crédito (Res. SBS 11356-2008 y 2368-2023).
 
-- Demo: [URL de Streamlit]
+- Demo: https://auditrail.streamlit.app
 - Repo: https://github.com/henryluis0603/contexta
 - Video: [link]
 ```
