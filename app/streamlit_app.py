@@ -242,7 +242,11 @@ with tab_inf:
         # Informe en PDF (LaTeX si hay motor; si no, reportlab). Se genera una sola vez por informe.
         if st.session_state.get("pdf_de") is not inf:
             with st.spinner("Preparando el PDF…"):
-                st.session_state["pdf"], _ = generar_pdf(datos, res)
+                try:
+                    st.session_state["pdf"], _ = generar_pdf(datos, res)
+                except Exception:  # el informe en pantalla nunca debe caerse por el PDF
+                    from backend.reporte_pdf import pdf_reportlab
+                    st.session_state["pdf"] = pdf_reportlab(datos, res)
             st.session_state["pdf_de"] = inf
         st.download_button("📄 Descargar informe (PDF)", st.session_state["pdf"],
                            file_name=f"contexto_{datos['empresa'].replace(' ', '_')}.pdf",
