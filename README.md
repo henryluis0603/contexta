@@ -90,7 +90,15 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 ## 6. Demo
 
-**URL:** [auditrail.streamlit.app](https://auditrail.streamlit.app) · **Capturas del flujo principal:** `[COMPLETAR: docs/img/01_busqueda.png, 02_informe.png, 03_fuentes.png]`
+**URL:** [auditrail.streamlit.app](https://auditrail.streamlit.app)
+
+**Flujo principal** (Cementos Pacasmayo, en la app publicada):
+
+| 1. Escribe la empresa y detecta el sector | 2. Ficha del deudor con fuentes |
+|---|---|
+| <img src="docs/img/01_busqueda.jpg" alt="Búsqueda y detección del sector" width="240"> | ![Ficha con RUC, ventas, grupo económico y tipo de crédito referencial](docs/img/02_informe.jpg) |
+| **3. Señales externas y alertas** | **4. Detalle por dimensión, cada afirmación con su fuente** |
+| ![OPA, multas de OEFA y SUNAFIL con fecha y relevancia](docs/img/03_alertas.jpg) | ![Sector y macroeconomía con citas S1, S6, S24](docs/img/04_fuentes.jpg) |
 
 ### Arquitectura
 
