@@ -20,9 +20,12 @@ Hacemos el **análisis de contexto externo** (X) para **los auditores internos q
 
 ## 2. Founder
 
-**Henry Luis Llupton Capuñay**. `[COMPLETAR: foto en docs/img/founder.jpg]`
+<img src="docs/img/founder.jpg" alt="Henry Luis Llupton Capuñay" width="200" align="right">
+
+**Henry Luis Llupton Capuñay**
 
 Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabajo en auditoría interna de riesgos en banca, donde reviso la clasificación crediticia de empresas. Conozco el problema desde adentro: el análisis se apoya en el historial crediticio y en los estados financieros, pero el contexto externo casi nunca se revisa de forma sistemática.
+<br clear="right">
 
 **Cómo cubro cada frente con agentes de IA:**
 - **Producto:** el problema y los criterios (qué dimensiones importan y qué fuentes son confiables) los defino yo, a partir de mi trabajo y de las entrevistas.
