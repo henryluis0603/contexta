@@ -94,7 +94,7 @@ PROMPT_GRUPO = (
 PROMPT_MERCADO = (
     "Busca en la web: {consulta}. Para esa empresa peruana reporta, con fecha: (1) la clasificación de riesgo MÁS "
     "RECIENTE de cada clasificadora (Moody's Local Perú, Apoyo & Asociados/Fitch, PCR, JCR, Class & Asociados, S&P, "
-    "Fitch, Moody's) con el instrumento, la categoría y la perspectiva, y cualquier cambio de categoría o perspectiva "
+    "Fitch, Moody's) con el instrumento, la categoría, la perspectiva y los fundamentos que da la clasificadora (principales fortalezas y riesgos), y cualquier cambio de categoría o perspectiva "
     "en los últimos 24 meses; (2) hechos de importancia comunicados a la SMV en los últimos 12 meses (OPA, fusiones, "
     "adquisiciones, emisiones o recompras de bonos, cambios de control, dividendos, refinanciamientos); (3) "
     "proyectos de inversión o expansión anunciados. Prioriza smv.gob.pe, la web de la clasificadora y medios "

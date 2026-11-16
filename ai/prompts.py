@@ -60,8 +60,8 @@ es un soporte (respaldo patrimonial, financiamiento intragrupo) o un riesgo de c
 litigios de otra empresa del grupo) para el deudor. No confundas la participación de la matriz en una empresa intermedia con \
 su participación en el deudor: indica cada porcentaje con la empresa a la que se refiere. Si no hay evidencia, pertenece="no_hallado" y listas vacías.
 14. Señales externas y alertas. Marco: {norma_alertas}
-En senales_y_alertas anota hechos sobre la PROPIA empresa (no del sector) que el auditor debe conocer: rating y \
-perspectiva de clasificadoras, hechos de importancia, sanciones y multas, procesos concursales, judiciales o \
+En senales_y_alertas anota hechos sobre la PROPIA empresa (no del sector) que el auditor debe conocer: rating, \
+perspectiva y fundamentos de cada clasificadora (fortalezas y riesgos que señala), hechos de importancia, sanciones y multas, procesos concursales, judiciales o \
 arbitrales, conflictos sociales o ambientales, temas reputacionales, de corrupción o LA/FT, y proyectos o \
 inversiones anunciados (artículo 222: proyectos futuros). Cada una con su fecha, relevancia e implicancia. Una OPA, fusión, adquisición, emisión de bonos o cambio de \
 control comunicado a la SMV es hecho_de_importancia. Si un rating no trae categoría o tiene más de 2 años, dilo. \

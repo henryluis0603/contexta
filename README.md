@@ -41,6 +41,8 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 **Cuánto les cuesta.** El equipo entrevistado revisa **20 empresas por ciclo mensual**, repartidas entre sus integrantes, y tiene **3 días al mes** para el análisis completo de clasificación. El contexto externo es solo uno de los insumos (junto con estados financieros, historial crediticio y comportamiento bancario, que se trabajan con información interna), así que compite por ese tiempo con todos los demás insumos. Hoy, la búsqueda del contexto toma **15 a 20 minutos por empresa** y se hace **al inicio**, antes de pasar a los estados financieros y al comportamiento bancario: son **5 a 7 horas al mes** del equipo (20 empresas), dentro de una ventana de 3 días. Con Auditrail el informe sale en alrededor de un minuto y el auditor dedica unos 5 minutos a verificar las fuentes (supuesto), así que el equipo recupera **3 a 5 horas al mes** para el análisis financiero. Además, el resultado es más completo y queda documentado: cada afirmación con su fuente, en un PDF que se adjunta al papel de trabajo, e incluye señales que una búsqueda rápida suele omitir (rating, sanciones, grupo económico).
 
+**Lo confirmó la jefatura.** En una reunión del área se cuestionó que no se estaba considerando el contexto socioeconómico del deudor y que buscar fuentes para entender una empresa toma tiempo. Las tres personas entrevistadas (en persona, el 13/11) probaron la app y coincidieron en que es útil para tener contexto **antes** de empezar el análisis; la jefa quiere llevarla al equipo interno que desarrolla agentes para adaptarla a los lineamientos del banco.
+
 **Cómo lo resuelven hoy sin Auditrail.** Búsquedas manuales en Google y en medios, revisión ocasional de reportes del BCRP, conocimiento tácito del auditor, o simplemente no hacerlo.
 
 **Pruebas con usuarios.** Auditores del equipo usaron Auditrail con empresas reales (fotos con su consentimiento):
@@ -55,7 +57,7 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 | # | Rol | Lo que planteó | Qué cambió en Auditrail |
 |---|---|---|---|
 | 1 | Jefa de auditoría interna | Considerar la Res. SBS N.° 2368-2023 | El informe sigue la nueva definición de CPP (sensibilidad del flujo de caja al entorno a 12 meses), calcula el tipo de crédito referencial e incluye el riesgo único y grupo económico |
-| 2 | Auditor de riesgo de crédito | Saber qué dicen otros sobre la empresa y cómo está | Nueva sección de señales externas y alertas: clasificadoras, SMV, reguladores, procesos, conflictos y reputación |
+| 2 | Auditor de riesgo de crédito | Saber qué dicen otros sobre la empresa, incluido el análisis de las clasificadoras (hoy lo busca rápido en Google) | Nueva sección de señales externas y alertas: rating y fundamentos de cada clasificadora, SMV, reguladores, procesos, conflictos y reputación |
 | 3 | Auditor de riesgo de crédito | Incluir los estados financieros | Fuera de esta versión: los EEFF se analizan con información interna del banco. Queda como siguiente implementación |
 
 ## 4. Solución e insight
@@ -144,7 +146,7 @@ Herramientas: `detectar_sector_empresa`, `contexto_empresa`, `indicadores_sector
 
 ## 7. Modelo de negocio
 
-**Quién paga:** el área de auditoría interna (o de riesgos) de la institución financiera. En las entrevistas, la disposición a pagar fue de **S/ 20 al mes por auditor** o **S/ 70 al mes por equipo**.
+**Quién paga:** el área de auditoría interna (o de riesgos) de la institución financiera. En las entrevistas, la disposición a pagar fue de **S/ 20 al mes por auditor** o **S/ 70 al mes por equipo**. La decisión la toma la jefatura de auditoría con su jefatura superior, y la jefa propuso pasar la herramienta al equipo interno de desarrollo de agentes: ese es el camino al plan Institución (licencia más adaptación a la normativa interna).
 
 | Plan | Para quién | Precio | Incluye |
 |---|---|---|---|

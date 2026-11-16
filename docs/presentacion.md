@@ -20,16 +20,16 @@ La clave nunca va en el repo: en Cloud vive en *Secrets*; en local, en `.env` (i
 ## 2. Pitch de 3 minutos
 
 **0:00–0:30 · El problema.**
-"Trabajo en auditoría interna de riesgos en banca. La SBS nos pide revisar si la clasificación de un deudor es consistente con su situación. Desde la Res. SBS 2368-2023, la categoría CPP considera explícitamente la sensibilidad del flujo de caja a 12 meses frente al entorno económico, comercial, regulatorio y político. Pero el entorno hoy se revisa a mano en Google, o no se revisa." `[dato de las entrevistas: X horas por deudor, Y deudores por ciclo]`
+"Trabajo en auditoría interna de riesgos en banca. La SBS nos pide revisar si la clasificación de un deudor es consistente con su situación. Desde la Res. SBS 2368-2023, la categoría CPP considera explícitamente la sensibilidad del flujo de caja a 12 meses frente al entorno económico, comercial, regulatorio y político. Pero el entorno hoy se revisa a mano en Google, o no se revisa." "En mi equipo revisamos 20 empresas al mes en una ventana de 3 días, y solo buscar el contexto toma 15 a 20 minutos por empresa."
 
 **0:30–0:50 · Quién lo sufre.**
-"Los auditores internos de riesgo de crédito. En mis entrevistas…" `[una cita textual de un auditor]`
+"Los auditores internos de riesgo de crédito. En una reunión de mi área se cuestionó justamente que no estábamos considerando el contexto socioeconómico, y que buscar fuentes toma tiempo. Mi jefa, que me pidió anclarlo en la 2368-2023, quiere llevarlo al equipo que desarrolla agentes en el banco."
 
 **0:50–2:10 · Demo en vivo.**
 1. Escribo "Cementos Pacasmayo" y presiono Enter: detecta sola el sector y subsector.
 2. Genero el informe: ficha con ventas, grupo económico y tipo de crédito referencial según la 2368-2023.
 3. Las 6 dimensiones con su señal; abro una y muestro que cada afirmación tiene su fuente enlazada.
-4. Señales y alertas (rating, OPA de Holcim, multas de OEFA y SUNAFIL) y el grupo económico (riesgo único).
+4. Señales y alertas (ratings de Moody's Local y Apoyo con sus fundamentos, OPA de Holcim, multas de OEFA y SUNAFIL) y el grupo económico (riesgo único).
 5. Insumos para la clasificación, agrupados por los criterios de la norma, y los puntos de verificación.
 6. Descargo el PDF: "esto se adjunta al papel de trabajo".
 
@@ -37,7 +37,7 @@ La clave nunca va en el repo: en Cloud vive en *Secrets*; en local, en `.env` (i
 "La regla central es: sin fuente, no hay afirmación. Toda afirmación sin una cita válida se elimina antes de mostrarse. Un auditor no puede sustentar con 'la IA dice que'."
 
 **2:40–3:00 · Negocio y cierre.**
-"Cada informe cuesta unos 8 centavos de dólar. Lo paga la institución por auditor al mes." `[precio validado en entrevistas]` "Auditrail: el entorno del deudor, con evidencia auditable."
+"Cada informe cuesta unos 8 centavos de dólar. El equipo de auditoría pagaría S/ 70 al mes: S/ 3.50 por empresa, con un margen del 91 %." "Auditrail: el entorno del deudor, con evidencia auditable."
 
 **Plan B:** si falla internet o la API, pasa el video de respaldo o abre un PDF ya generado.
 
