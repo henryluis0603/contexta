@@ -17,7 +17,7 @@
 
 ## Cómo cambió Auditrail por esta conversación
 - Se agregó la sección **Señales externas y alertas**: rating y perspectiva de cada clasificadora, hechos de importancia en la SMV, sanciones de reguladores (OEFA, SUNAFIL, INDECOPI…), procesos concursales y judiciales, conflictos sociales, temas reputacionales o de LA/FT y proyectos anunciados. Cada alerta lleva fecha, relevancia y fuente, y se listan las categorías sin hallazgos.
-- La búsqueda de clasificadoras ahora pide también los **fundamentos** de cada rating (fortalezas y riesgos que señala la clasificadora), no solo la categoría.
+- La búsqueda de clasificadoras pide también los **fundamentos** de cada rating (fortalezas y riesgos que señala la clasificadora), no solo la categoría.
 
 ## Reacción al demo
 - Probó la app él mismo. Le pareció **muy útil para tener contexto antes de empezar el análisis**.

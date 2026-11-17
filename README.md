@@ -9,14 +9,14 @@ Escribes el nombre de la empresa (Auditrail detecta solo su sector y subsector) 
 | | |
 |---|---|
 | **Demo** | **[auditrail.streamlit.app](https://auditrail.streamlit.app)** · o en local: ver [Cómo correrlo](#cómo-correrlo) |
-| **Video de respaldo (60–90 s)** | **[Ver en YouTube](https://youtu.be/UFqE79TUiv8)** |
+| **Video demo (1:14)** | **[Ver en YouTube](https://youtu.be/UFqE79TUiv8)** |
 | **Curso** | Data Science con Python · Universidad del Pacífico · 2026-II |
 
 ---
 
 ## 1. One-liner
 
-Hacemos el **análisis de contexto externo** (X) para **los auditores internos que revisan la clasificación del deudor** (Y) mediante un **RAG con citas obligatorias sobre fuentes verificadas** (Z).
+Hacemos el **análisis de contexto externo** para **los auditores internos que revisan la clasificación del deudor** mediante un **RAG con citas obligatorias sobre fuentes verificadas**.
 
 ## 2. Founder
 
@@ -39,7 +39,7 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 **Qué pasa hoy.** Revisan el historial crediticio y los estados financieros, pero el **contexto externo** (un Fenómeno El Niño que golpea al sector, un paro de transportistas, un cambio tributario, una adquisición apalancada) se busca a mano en Google o directamente no se revisa. Los estados financieros miran el pasado; el riesgo se mueve con el contexto.
 
-**Cuánto les cuesta.** El equipo entrevistado revisa **20 empresas por ciclo mensual**, repartidas entre sus integrantes, y tiene **3 días al mes** para el análisis completo de clasificación. El contexto externo es solo uno de los insumos (junto con estados financieros, historial crediticio y comportamiento bancario, que se trabajan con información interna), así que compite por ese tiempo con todos los demás insumos. Hoy, la búsqueda del contexto toma **15 a 20 minutos por empresa** y se hace **al inicio**, antes de pasar a los estados financieros y al comportamiento bancario: son **5 a 7 horas al mes** del equipo (20 empresas), dentro de una ventana de 3 días. Con Auditrail el informe sale en alrededor de un minuto y el auditor dedica unos 5 minutos a verificar las fuentes (supuesto), así que el equipo recupera **3 a 5 horas al mes** para el análisis financiero. Además, el resultado es más completo y queda documentado: cada afirmación con su fuente, en un PDF que se adjunta al papel de trabajo, e incluye señales que una búsqueda rápida suele omitir (rating, sanciones, grupo económico).
+**Cuánto les cuesta.** El equipo entrevistado revisa **20 empresas por ciclo mensual**, repartidas entre sus integrantes, y tiene **3 días al mes** para el análisis completo de clasificación. El contexto externo es solo uno de los insumos (junto con estados financieros, historial crediticio y comportamiento bancario, que se trabajan con información interna), así que compite por ese tiempo con todos los demás insumos. Hoy, la búsqueda del contexto toma **15 a 20 minutos por empresa** y se hace **al inicio**, antes de pasar a los estados financieros y al comportamiento bancario: son **5 a 7 horas al mes** del equipo (20 empresas), dentro de una ventana de 3 días. Con Auditrail el informe sale en alrededor de un minuto y el auditor dedica unos 5 minutos a verificar las fuentes (estimación propia), así que el equipo recupera **3 a 5 horas al mes** para el análisis financiero. Además, el resultado es más completo y queda documentado: cada afirmación con su fuente, en un PDF que se adjunta al papel de trabajo, e incluye señales que una búsqueda rápida suele omitir (rating, sanciones, grupo económico).
 
 **Lo confirmó la jefatura.** En una reunión del área se cuestionó que no se estaba considerando el contexto socioeconómico del deudor y que buscar fuentes para entender una empresa toma tiempo. Las tres personas entrevistadas (en persona, el 13/11) probaron la app y coincidieron en que es útil para tener contexto **antes** de empezar el análisis; la jefa quiere llevarla al equipo interno que desarrolla agentes para adaptarla a los lineamientos del banco.
 
@@ -176,7 +176,7 @@ Herramientas: `detectar_sector_empresa`, `contexto_empresa`, `indicadores_sector
 | Servidor | Streamlit Community Cloud | 0 | 0 |
 | **Total** | | | **≈ 0.08 (≈ S/ 0.30)** |
 
-La búsqueda web es el 80 % del costo, y se guarda en caché por un día: repetir una empresa el mismo día cuesta ≈ US$ 0.015. Con 150 informes al mes, el costo variable de un usuario es ≈ US$ 12 (≈ S/ 45).
+La búsqueda web es el 80 % del costo, y se guarda en caché por un día: repetir una empresa el mismo día cuesta ≈ US$ 0.015. Con 100 informes al mes (tope del plan Equipo), el costo variable es ≈ US$ 8 (≈ S/ 30).
 
 La app muestra los tokens reales al pie de cada informe y, si configuras los precios en `.env` (ver `.env.example`), también el costo. **Margen de contribución** = precio del plan − (informes al mes × costo por informe). Plan Equipo con 20 informes: S/ 70 − S/ 6 ≈ S/ 64. En el peor caso (100 informes): S/ 70 − S/ 30 = S/ 40.
 
@@ -192,7 +192,7 @@ La app muestra los tokens reales al pie de cada informe y, si configuras los pre
 ## 9. Qué hizo el agente
 
 Claude Code (Anthropic) fue el co-founder técnico:
-- **Generó:** la estructura del repo; la ingesta de noticias (decodificación de Google News, extracción de texto, filtro de fuentes y de noticias de otros países); el cliente del BCRP con las series por subsector; la búsqueda web y la ficha de la empresa; el detector de sector; el pipeline RAG con cuota por dimensión y validación de citas; la app de Streamlit y su diseño; el PDF en LaTeX con respaldo en reportlab; el servidor MCP; las pruebas en `tests/`, y el borrador de este README.
+- **Generó:** la estructura del repo; la ingesta de noticias (decodificación de Google News, extracción de texto, filtro de fuentes y de noticias de otros países); el cliente del BCRP con las series por subsector; la búsqueda web y la ficha de la empresa; el detector de sector; el pipeline RAG con cuota por dimensión y validación de citas; la app de Streamlit y su diseño; el PDF en LaTeX con respaldo en reportlab; el servidor MCP; las pruebas en `tests/` y la primera versión de este README, que luego revisé y completé.
 - **Lo que definí yo:** el problema y el usuario (auditoría interna, no el área comercial), las 6 dimensiones de riesgo, qué cuenta como fuente confiable, la regla "sin fuente no hay afirmación", el anclaje en la Res. SBS N.° 11356-2008 y su modificación 2368-2023 (por indicación de mi jefatura), y la validación con usuarios.
 - **Lo que corregí tras revisar los resultados:**
   - Quité la "señal global": contradecía a las dimensiones (Southern Copper salía favorable con mayoría de dimensiones desfavorables) y cada dimensión pesa distinto.
