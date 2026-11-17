@@ -102,6 +102,8 @@ Estudiante de último ciclo de Economía en la Universidad del Pacífico. Trabaj
 
 ### Arquitectura
 
+(También en [`docs/arquitectura.md`](docs/arquitectura.md).)
+
 ```mermaid
 flowchart LR
     U[Auditor] -->|nombre de la empresa| DET[ai/detectar_sector.py<br/>sector y subsector]
