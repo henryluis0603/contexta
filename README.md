@@ -9,7 +9,7 @@ Escribes el nombre de la empresa (Auditrail detecta solo su sector y subsector) 
 | | |
 |---|---|
 | **Demo** | **[auditrail.streamlit.app](https://auditrail.streamlit.app)** · o en local: ver [Cómo correrlo](#cómo-correrlo) |
-| **Video demo (1:14)** | **[Ver en YouTube](https://youtu.be/UFqE79TUiv8)** |
+| **Video demo (1:14)** | **[Ver en YouTube](https://youtu.be/_fTWbICa8As)** |
 | **Curso** | Data Science con Python · Universidad del Pacífico · 2026-II |
 
 ---
