@@ -63,7 +63,7 @@ Análisis del entorno del deudor, con fuentes citadas, para auditores internos d
 
 - Demo: https://auditrail.streamlit.app
 - Repo: https://github.com/henryluis0603/contexta
-- Video: [link]
+- Video: https://youtu.be/UFqE79TUiv8
 ```
 
 ## 5. Checklist final (lunes 16)
